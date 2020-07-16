@@ -18,6 +18,6 @@ def ready(ready):
 
 @bot.event("on_message")
 def message(messgage):
-   answer = rp(message.author.nick, message.author.id, message.content[1:])
+   answer = role_play(message.author.nick, message.author.id, message.content[1:])
     
 
