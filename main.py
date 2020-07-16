@@ -9,8 +9,9 @@
 # --------------------------------------------------
 
 from piscord import Handler
+import os
 
-odyssee = Handler("", "+")
+odyssee = Handler(os.environ['token'], "+")
 
 @bot.event("on_ready")
 def ready(ready):
