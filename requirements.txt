@@ -1,1 +1,1 @@
-piscord.py
+piscord
