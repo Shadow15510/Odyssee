@@ -3,9 +3,8 @@
 # by LeRoiDesKiwis and Sha-Chan~
 # last version released on the … of … 2020
 #
-# Code provided with licence (CC BY-NC-SA 4.0)
-# for more information about licence :
-# https://creativecommons.org/licenses/by-nc-sa/4.0/
+# code provided with licence :
+# GNU General Public Licence v3.0
 # --------------------------------------------------
 
 from piscord import Handler
