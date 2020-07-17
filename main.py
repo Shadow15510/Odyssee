@@ -8,6 +8,7 @@
 # --------------------------------------------------
 
 from piscord import Handler
+from lib_RolePlay import role_play
 import os
 
 odyssee = Handler(os.environ['token'], "+")
