@@ -28,7 +28,7 @@ except:
 
 @odyssee.event
 def on_ready(message):
-  odyssee.change_presence(activity = discord.Activity(type = discord.ActivityType.watching, name = "+aide"))
+  odyssee.set_status("Rubrique d'aide : +aide")
   
   
 # --------------------------------------------------
