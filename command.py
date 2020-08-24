@@ -91,7 +91,8 @@ class Command:
   def species_change(self, message):
     user = self.id_to_object(get_user(message)[1])
     if not user:
-      return "*Erreur : {get_user(message)[0]} n'existe pas.*"
+      return self.species_list()
+    
     new_species = analyse(message)
     
     if not new_species:

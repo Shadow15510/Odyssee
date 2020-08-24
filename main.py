@@ -28,7 +28,7 @@ except:
 
 @odyssee.event
 def on_ready(message):
-  odyssee.set_presence("Rubrique d'aide : +aide")
+  odyssee.set_presence("+aide", 3)
   
   
 # --------------------------------------------------
@@ -210,6 +210,7 @@ def aide(message):
   answer.add_field(name="Créer un nouveau joueur", value="`+new < nom_de_l'espèce >`", inline=False)
   answer.add_field(name="Connaitre ses statistiques ou celles d'un joueur", value="`+stat [< nom_du_joueur >]`", inline=False)
   answer.add_field(name="Changer sa couleur", value="`+couleur < nom_de_la_couleur >` (ou code héxadécimal)", inline=False)
+  answer.add_field(name="Connaître les espèces enregistrées", value="`+espèce`", inline=False)
   answer.add_field(name="Changer son espèce", value="`+espèce < nouvelle_espèce >`", inline=False)
   answer.add_field(name="Avoir la liste des joueurs", value="`+liste`", inline=False)
   answer.add_field(name="Démarrer ou poursuivre un combat", value="`+combat < nom_de_l'adversaire >`", inline=False)
