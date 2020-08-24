@@ -26,6 +26,10 @@ except:
   save_send("[[],[]]")
   cmnd = Command({}, [])
 
+@odyssee.event
+def on_ready(message):
+  odyssee.change_presence(activity = discord.Activity(type = discord.ActivityType.watching, name = "+aide"))
+  
   
 # --------------------------------------------------
 # Commands
@@ -211,8 +215,8 @@ def aide(message):
   answer.add_field(name="Démarrer ou poursuivre un combat", value="`+combat < nom_de_l'adversaire >`", inline=False)
   answer.add_field(name="Connaitre les articles disponible, consulter les statistiques d'un article", value="`+article [< nom_de_l'article >]`", inline=False)
   answer.add_field(name="Avoir la description de ses pouvoir et les utiliser", value="`+pouvoir [< nom_du_pouvoir >] [, < nom_de_l'ennemi >]`", inline=False)
-  answer.add_field(name="Effectuer un lancé de dé", value="`+dé [< nombre_de_faces >] [, < nombre_de_dés >]`", inline=False)
-  answer.add_field(name="Effectuer un lancé dans une capacité", value="`+capacité < nom_de_la_capacité >`", inline=False)
+  answer.add_field(name="Effectuer un lancer de dé", value="`+dé [< nombre_de_faces >] [, < nombre_de_dés >]`", inline=False)
+  answer.add_field(name="Effectuer un lancer dans une capacité", value="`+capacité < nom_de_la_capacité >`", inline=False)
   answer.add_field(name="Changer de lieu", value="`+lieu < nom_du_nouveau_lieu >`", inline=False)
   answer.add_field(name="Acheter un objet", value="`+achat < nom_de_l'objet >`", inline=False)
   answer.add_field(name="Ramasser un objet", value="`+prend < nom_de_l'objet >`", inline=False)
