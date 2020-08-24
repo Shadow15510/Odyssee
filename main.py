@@ -28,7 +28,7 @@ except:
 
 @odyssee.event
 def on_ready(message):
-  odyssee.set_status("Rubrique d'aide : +aide")
+  odyssee.set_presence("Rubrique d'aide : +aide")
   
   
 # --------------------------------------------------
