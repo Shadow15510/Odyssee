@@ -552,8 +552,6 @@ class Command:
 # --- Administration --- #
 
   def save(self):
-    if get_user(message)[1] not in data_admin():
-      return "*< commande non autorisée >*"
     save_delete()
     player_file = [object_to_save(player) for player in self.players.values()]
     save_file = [player_file, self.kick]
