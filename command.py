@@ -608,7 +608,11 @@ class Command:
         result = f"{player.name} a perdu {new_value}."
       else:
         result = f"{player.name} ne possède pas cet objet : '{new_value}'."
-      
+
+    elif capacity_name == "nom":
+      old_name = player.name
+      player.name = new_value
+      result = f"Le nom de {old_name} est devenu : {new_value}."
 
     else:
       result = "*Erreur : la capacité saisie ne correspond à aucune capacité connue.*"
