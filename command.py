@@ -562,7 +562,7 @@ class Command:
     if get_user(message)[1] not in data_admin():
       return "*< commande non autorisée >*"
     save_delete()
-    save_send(str(message.content[8:]))
+    save_send(message.content[8:])
     return "Partie chargée."
 
   def player_modify(self, message):

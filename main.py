@@ -182,7 +182,7 @@ def sauvegarde(message):
 
 @odyssee.command
 def charger(message):
-  message.channel.send(cmnd.load(message.content[8:]))
+  message.channel.send(cmnd.load(message))
   cmnd.save()
 
 @odyssee.command
