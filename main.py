@@ -11,11 +11,12 @@ from piscord import Handler, Embed
 from command import *
 
 odyssee = Handler(os.environ["token"], "+")
-player_file, kick_file = {}, []
+player_file, kick_file, cmnd = {}, [], None
 
 def init_game():
   global player_file
   global kick_file
+  global cmnd
   
   print("Initialisation...")
   try:
@@ -33,7 +34,7 @@ def init_game():
     save_send("[[],[]]")
     print("> save file didn't found\n> new game start")
 
-cmnd = Command(player_file, kick_file)
+  cmnd = Command(player_file, kick_file)
 
 @odyssee.event
 def on_ready(message):
@@ -184,7 +185,6 @@ def sauvegarde(message):
 def charger(message):
   message.channel.send(cmnd.load(message))
   init_game()
-  #cmnd.save()
 
 @odyssee.command
 def modifier(message):
