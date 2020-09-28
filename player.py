@@ -1,12 +1,3 @@
-# --------------------------------------------------
-# Odyssée (Version 1.0)
-# by Sha-Chan~
-# last version released on the 30 of July 2020
-#
-# code provided with licence :
-# GNU General Public Licence v3.0
-# --------------------------------------------------
-
 # Statistiques : Courage (0), Force (1), Habileté (2), Rapidité (3) Défense (4), Vie (5), Mana (6), Argent (7), Couleur (8)
 
 from random import randint

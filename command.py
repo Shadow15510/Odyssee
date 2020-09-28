@@ -1,12 +1,3 @@
-# --------------------------------------------------
-# Odyssée (Version 1.0)
-# by Sha-Chan~
-# last version released on the 30 of July 2020
-#
-# code provided with licence :
-# GNU General Public Licence v3.0
-# --------------------------------------------------
-
 from player import *
 
 # --------------------------------------------------
@@ -561,11 +552,21 @@ class Command:
 # --- Administration --- #
 
   def save(self):
+    if get_user(message)[1] not in data_admin():
+      return "*< commande non autorisée >*"
     save_delete()
     player_file = [object_to_save(player) for player in self.players.values()]
     save_file = [player_file, self.kick]
     save_send(str(save_file))
     print("Partie sauvegardée.")
+
+  def load(self, message):
+    if get_user(message)[1] not in data_admin():
+      return "*< commande non autorisée >*"
+    file = analyse(message)
+    save_delete()
+    save_send(file)
+    return "Partie chargée."
 
   def player_modify(self, message):
     if get_user(message)[1] not in data_admin():

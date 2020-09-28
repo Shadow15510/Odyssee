@@ -1,7 +1,7 @@
 # --------------------------------------------------
-# Odyssée (Version 1.0)
-# by Sha-Chan~
-# last version released on the 30 of July 2020
+# Odyssée (Version 1.1)
+# by Sha-chan~
+# last version released on the 28 of September 2020
 #
 # code provided with licence :
 # GNU General Public Licence v3.0
@@ -169,6 +169,11 @@ def jette(message):
 def sauvegarde(message):
   cmnd.save()
   message.channel.send(f"Partie sauvegardée.\n\n**Fichier local**\n{save_read()}")
+
+@odyssee.command
+def charger(message):
+  message.channel.send(cmnd.load(message))
+  cmnd.save()
 
 @odyssee.command
 def modifier(message):
