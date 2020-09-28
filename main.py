@@ -11,8 +11,12 @@ from piscord import Handler, Embed
 from command import *
 
 odyssee = Handler(os.environ["token"], "+")
+player_file, kick_file = {}, []
 
 def init_game():
+  global player_file
+  global kick_file
+  
   print("Initialisation...")
   try:
     save_file = eval(save_read())
@@ -22,14 +26,14 @@ def init_game():
     player_file = [save_to_object(player) for player in player_file]
     player_file = {player.id : player for player in player_file}
   
-    cmnd = Command(player_file, kick_file)
     print("> save successfully loaded")
 
   except:
     save_delete()
     save_send("[[],[]]")
-    cmnd = Command({}, [])
     print("> save file didn't found\n> new game start")
+
+cmnd = Command(player_file, kick_file)
 
 @odyssee.event
 def on_ready(message):
