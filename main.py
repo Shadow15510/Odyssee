@@ -12,23 +12,29 @@ from command import *
 
 odyssee = Handler(os.environ["token"], "+")
 
-try:
-  save_file = eval(save_read())
+def init_game():
+  print("Initialisation...")
+  try:
+    save_file = eval(save_read())
   
-  player_file, kick_file = save_file[0], save_file[1]
+    player_file, kick_file = save_file[0], save_file[1]
   
-  player_file = [save_to_object(player) for player in player_file]
-  player_file = {player.id : player for player in player_file}
+    player_file = [save_to_object(player) for player in player_file]
+    player_file = {player.id : player for player in player_file}
   
-  cmnd = Command(player_file, kick_file)
-except:
-  save_delete()
-  save_send("[[],[]]")
-  cmnd = Command({}, [])
+    cmnd = Command(player_file, kick_file)
+    print("> save successfully loaded")
+
+  except:
+    save_delete()
+    save_send("[[],[]]")
+    cmnd = Command({}, [])
+    print("> save file didn't found\n> new game start")
 
 @odyssee.event
 def on_ready(message):
   odyssee.set_presence("+aide", 3)
+  init_game()
   
   
 # --------------------------------------------------
@@ -172,12 +178,13 @@ def sauvegarde(message):
 
 @odyssee.command
 def charger(message):
-  message.channel.send(cmnd.load(message))
+  message.channel.send(cmnd.load(message.content[8:]))
   cmnd.save()
 
 @odyssee.command
 def modifier(message):
   message.channel.send(cmnd.player_modify(message))
+  init_game()
   cmnd.save()
 
 @odyssee.command
@@ -232,6 +239,7 @@ def aide(message):
 
   if int(message.author.id) in data_admin():
     answer.add_field(name="Forcer la sauvegarde et obtenir une copie locale", value="`+sauvegarde`", inline=False)
+    answer.add_field(name="Charger une sauvegarde", value="`+charger < sauvegarde >`", inline=False)
     answer.add_field(name="Modifier un joueur", value="`+modifier < nom_du_joueur >, < caractéristique à changer >, < nouvelle_valeur >`", inline=False)
     answer.add_field(name="Kicker un joueur", value="`+kick < nom_du_joueur >`", inline=False)
     answer.add_field(name="Unkick un joueur", value="`+unkick < id_du_joueur >`", inline=False)
