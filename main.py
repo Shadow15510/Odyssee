@@ -184,7 +184,7 @@ def sauvegarde(message):
 def charger(message):
   message.channel.send(cmnd.load(message))
   init_game()
-  cmnd.save()
+  #cmnd.save()
 
 @odyssee.command
 def modifier(message):
