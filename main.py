@@ -1,7 +1,7 @@
 # --------------------------------------------------
-# Odyssée (Version 1.1)
+# Odyssée (Version 1.2)
 # by Sha-chan~
-# last version released on the 28 of September 2020
+# last version released on the 4 of October 2020
 #
 # code provided with licence :
 # GNU General Public Licence v3.0
@@ -10,7 +10,7 @@
 from piscord import Handler, Embed
 from command import *
 
-odyssee = Handler(os.environ["token"], "+")
+odyssee = Handler(TOKEN, "+")
 player_file, kick_file, cmnd = {}, [], None
 
 def init_game():
@@ -214,7 +214,7 @@ def formatage_joueur(message):
 @odyssee.command
 def formatage(message):
   message.channel.send(cmnd.clear_all(message))
-  cmnd.save()
+  init_game()
 
 @odyssee.command  
 def aide(message):

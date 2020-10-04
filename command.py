@@ -552,7 +552,6 @@ class Command:
 # --- Administration --- #
 
   def save(self):
-    save_delete()
     player_file = [object_to_save(player) for player in self.players.values()]
     save_file = [player_file, self.kick]
     save_send(str(save_file))
@@ -561,8 +560,7 @@ class Command:
   def load(self, message):
     if get_user(message)[1] not in data_admin():
       return "*< commande non autorisée >*"
-    save_delete()
-    save_send(message.content[8:])
+    save_send(message.content[9:])
     return "Partie chargée."
 
   def player_modify(self, message):
@@ -669,9 +667,8 @@ class Command:
     if get_user(message)[1] not in data_admin():
       return "*< commande non autorisée >*"
 
-    self.player = {}
-    self.kick = []
-
+    save_delete()
+    
     return "Sauvegarde effacée."
 
   

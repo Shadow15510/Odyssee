@@ -307,14 +307,9 @@ def data_powerBySpecies():
 # --------------------------------------------------
 
 def object_to_save(player):
-  inventory = [save_convert(item) for item in player.inventory]
-  return [player.id, save_convert(player.name), save_convert(player.species), player.stat, save_convert(player.place), inventory]
+  return [player.id, player.name, player.species, player.stat, player.place, player.inventory]
 
 def save_to_object(save):
-  save[1] = save_revert(save[1])
-  save[2] = save_revert(save[2])
-  save[4] = save_revert(save[4])
-  save[5] = [save_revert(item) for item in save[5]]
   return Player(*save)
 
 
