@@ -10,7 +10,8 @@
 from piscord import Handler, Embed
 from command import *
 
-odyssee = Handler(TOKEN, "+")
+#token = …
+odyssee = Handler(token, "+")
 player_file, kick_file, cmnd = {}, [], None
 
 def init_game():
