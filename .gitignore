@@ -1,2 +1,2 @@
-save.txt
+*.txt
 __pycache__/*
