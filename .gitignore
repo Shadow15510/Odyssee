@@ -1,2 +1,3 @@
 *.txt
 __pycache__/*
+files/__pycache__/*
