@@ -1,7 +1,7 @@
 # --------------------------------------------------
-# Odyssée (Version 2.5)
+# Odyssée (Version 2.6)
 # by Sha-chan~
-# last version released on the 12 of December 2020
+# last version released on the 22 of December 2020
 #
 # code provided with licence :
 # GNU General Public Licence v3.0
@@ -10,8 +10,11 @@
 from piscord import Handler, Embed
 from files.command import *
 
-# token = "XXX"
-odyssee = Handler(token, "+")
+# TOKEN = 
+PREFIX = "+"
+SEP = ";"
+
+odyssee = Handler(TOKEN, PREFIX)
 player_file, kick_file, server_id, cmnd = {}, [], 0, None
 
 
@@ -37,7 +40,41 @@ def init_game():
         save_send("[[],[],0]")
         print("> save file didn't found\n> new game start")
 
-    cmnd = Command(player_file, kick_file, server_id)
+    cmnd = Command(player_file, kick_file, server_id, PREFIX, SEP)
+
+
+def help_display(message, command_help):
+    def auto_detect(command_help, query):
+        for i in command_help.items():
+            if query in i[1][0]: return i[0]
+
+    def formating_args(command):
+        if len(command):
+            return f" {SEP} ".join(command)
+        else:
+            return ""
+
+    answer = Embed()
+    answer.title = "Rubrique d'aide"
+    answer.color = 8421504
+
+    args = message.content.lower().split()
+    
+    if len(args) != 2:
+        answer.description = "Liste des commandes disponibles"
+        for i in command_help:
+            answer.add_field(name=i, value=f"`{PREFIX}{command_help[i][0][0]} {formating_args(command_help[i][0][1:])}`", inline=False)
+    else:
+        key = auto_detect(command_help, args[1])
+        if not key:
+            message.channel.send(f"*Erreur : la commande '{args[1]}' n'existe pas.*")
+            return None
+        else:
+            answer.description = f"Aide détaillée : {key.lower()}"
+            answer.add_field(name="Syntaxe", value=f"`{PREFIX}{command_help[key][0][0]} {formating_args(command_help[key][0][1:])}`", inline=True)
+            answer.add_field(name="Détails d'utilisation", value=(command_help[key][1], "< aucun >")[not command_help[key][1]], inline=True)
+
+    message.channel.send(embed = answer.to_json())
 
 
 def check_server_id(command):
@@ -54,7 +91,7 @@ def check_server_id(command):
 
 @odyssee.event
 def on_ready(message):
-    odyssee.set_presence("+aide", 3)
+    odyssee.set_presence(f"{PREFIX}aide", 3)
     init_game()
 
 # --------------------------------------------------
@@ -129,13 +166,15 @@ def combat(message):
 @check_server_id
 def article(message):
     info, color, message_type = cmnd.show_articles(message)
+
     if not message_type:
         answer = Embed()
         answer.title = info[0]
         answer.description = "Listes des articles disponibles"
         answer.color = color
+
         for item_name in info[1]:
-            item_stat = info[1][item_name]
+            item_stat = info[1][item_name][0]
             
             stat = ""
             for stat_name in item_stat:
@@ -152,9 +191,9 @@ def article(message):
         answer.description = "Détails de l'article"
         answer.color = color
 
-        value = "\n".join([f"`{name}.: {info[1][index]}`" for index, name in enumerate(("Courage .", "Force ...", "Habileté ", "Rapidité ", "Défense .", "Vie .....", "Mana ...."))])
+        value = "\n".join([f"`{name}.: {info[1][0][index]}`" for index, name in enumerate(("Courage .", "Force ...", "Habileté ", "Rapidité ", "Défense .", "Vie .....", "Mana ...."))])
         answer.add_field(name="Caractéristiques", value=value, inline=True)
-        answer.add_field(name="Prix", value=f"`{abs(info[1][7])} Drachmes`", inline=True)
+        answer.add_field(name="Divers", value=f"`Prix ..: {abs(info[1][0][7])} Drachmes`\n`Usage .: {('à stocker', 'à consommer', 'consommation immédiate')[info[1][1]]}`", inline=True)
         message.channel.send(embed = answer.to_json())
         return None
 
@@ -246,12 +285,18 @@ def donne(message):
 @odyssee.command
 @check_server_id
 def jette(message):
-    message.channel.send(cmnd.object_throw(message))
+    message.channel.send(cmnd.object_throw(message, False))
     cmnd.save()
   
 
-# --- Administration --- #
+@odyssee.command
+@check_server_id
+def utilise(message):
+    message.channel.send(cmnd.object_throw(message, True))
+    cmnd.save()
 
+
+# --- Administration --- #
 @odyssee.command
 def sauvegarde(message):
     cmnd.save()
@@ -300,56 +345,47 @@ def formatage(message):
     init_game()
 
 
-@odyssee.command  
-def aide(message):
-    def auto_detect(command_help, query):
-        for i in command_help.items():
-            if query in i[1][0]: return i[0]
-
-
+@odyssee.command
+def administration(message):
     command_help = {
-        "Créer un nouveau joueur": ("nouveau < nom_de_l'espèce >", ""),
-        "Changer son pseudo": ("pseudo < nouveau_pseudo >", ""),
-        "Connaitre ses statistiques ou celles d'un joueur": ("stat [< nom_du_joueur >]", "Pour voir vos propre stat entrez uniquement `+stat`."),
-        "Changer sa couleur": ("couleur < nom_de_la_couleur >", "Vous pouvez également entrer le code hexadécimal en utilisant `+couleur 0xRRVVBB`."),
-        "Connaître les espèces enregistrées et changer son espèce": ("espèce [< nouvelle_espèce >]", "Pour voir la liste entrez seulement `+espèce`."),
-        "Avoir la liste des joueurs": ("liste", ""),
-        "Démarrer ou poursuivre un combat": ("combat < nom_de_l'adversaire >", "Lors d'un combat, vous devez impérativement être sur le même lieu que votre adversaire."),
-        "Connaitre les articles disponible, consulter les statistiques d'un article": ("article [< nom_de_l'article >]", "Ne pas spécifier de nom d'article renvoie la liste de tous les articles disponibles. Vous ne pouvez consulter les articles que si vous êtes dans un magasin."),
-        "Avoir la description de ses pouvoir et les utiliser": ("pouvoir [< nom_du_pouvoir > [, < nom_de_l'ennemi >]]", "Pour avoir la liste de vos pouvoirs entrez seulement `+pouvoir`. Si vous voulez utiliser un de vos pouvoirs il faut spécifier le nom du pouvoir.\nCertains pouvoir nécessite d'avoir un adversaire : pensez à préciser le nom de l'adversaire visé."),
-        "Effectuer un lancer de dé": ("dé [< nombre_de_faces >], < nombre_de_dés >]]", "Par défaut, un dé à 20 faces est lancé."),
-        "Effectuer un lancer dans une capacité": ("capacité < nom_de_la_capacité >", ""),
-        "Changer de lieu": ("lieu < nom_du_nouveau_lieu >", "Pensez à bien préciser l'article. (i.e. : '__la__ plage' et non pas 'plage')"),
-        "Acheter un objet": ("achat < nom_de_l'objet >", "Faites attention à bien orthographier le nom de l'article sans oublier le déterminant."),
-        "Ramasser un objet": ("prend < nom_de_l'objet >", ""),
-        "Donner un objet à un joueur": ("donne < nom_du_joueur >, < nom_de_l'objet > [, < montant >]", "Vous devez être dans le même lieu.\nVous pouvez donner de l'argent à un autre joueur, le nom de l'objet devient 'Argent' et vous devez préciser un troisième paramètre `montant`. La syntaxe devient donc : `+donne < nom_du_joueur >, Argent, < montant >`."),
-        "Jetter un objet": ("jette < nom_de_l'objet >", ""),
-        "Sauvegarder, ou supprimer, une note": ("note < contenu_ou_numero >, < + | - >", "Pour ajouter une note utilisez la syntaxe : `+note < contenu >, +`. Pour supprimer une note entrez : `+note < numéro >, -`.\nVos notes sont visibles sur vos statistiques.")
-    }   
+        "Sauvegarder la partie et obtenir une copie locale": (["sauvegarde"], ""),
+        "Charger une partie externe": (["charger"], ""),
+        "Modifier les statistiques d'un joueur": (["modifier", "< nom_joueur >", "< nom_capacité >", "< valeur >"], "Capacité disponibles :\nCourage, Force, Habileté, Rapidité, Défense, Vie, Mana, Argent, Lieu, objet+, objet-, nom, toutes"),
+        "Kicker un joueur": (["kick", "< pseudo_joueur >"], ""),
+        "Autoriser un joueur kické à refaire un joueur": (["unkick", "< id_joueur >"], ""),
+        "Remettre à zéro les kicks": (["formatage_kick"], ""),
+        "Remettre à zéro les joueurs": (["formatage_joueur"], ""),
+        "Tout remettre à zéro": (["formatage"], ""),
+    }
 
-    answer = Embed()
-    answer.title = "Rubrique d'aide"
-    answer.color = 8421504
-
-    args = message.content.lower().split()
-
-    if len(args) != 2:
-        answer.description = "Liste des commandes disponibles"
-        for i in command_help:
-            answer.add_field(name=i, value=f"`+{command_help[i][0]}`", inline=False)
-    else:
-        key = auto_detect(command_help, args[1])
-        if not key:
-            message.channel.send(f"*Erreur : la commande '{args[1]}' n'existe pas.*")
-            return None
-        else:
-            answer.description = f"Aide détaillée : {key.lower()}"
-            answer.add_field(name="Syntaxe", value=f"`+{command_help[key][0]}`", inline=True)
-            answer.add_field(name="Détails d'utilisation", value=(command_help[key][1], "< aucun >")[not command_help[key][1]], inline=True)
+    help_display(message, command_help)
 
 
+@odyssee.command
+def aide(message):
+    command_help = {
+        "Créer un nouveau joueur": (["nouveau", "< nom_de_l'espèce >"], ""),
+        "Changer son pseudo": (["pseudo", "< nouveau_pseudo >"], ""),
+        "Connaitre ses statistiques ou celles d'un joueur": (["stat", "[< nom_du_joueur >]"], f"Pour voir vos propre stat entrez uniquement `{PREFIX}stat`."),
+        "Changer sa couleur": (["couleur", "< nom_de_la_couleur >"], f"Vous pouvez également entrer le code hexadécimal en utilisant `{PREFIX}couleur 0xRRVVBB`."),
+        "Connaître les espèces enregistrées et changer son espèce": (["espèce", "[< nouvelle_espèce >]"], f"Pour voir la liste entrez seulement `{PREFIX}espèce`."),
+        "Avoir la liste des joueurs": (["liste"], ""),
+        "Démarrer ou poursuivre un combat": (["combat", "< nom_de_l'adversaire >"], "Lors d'un combat, vous devez impérativement être sur le même lieu que votre adversaire."),
+        "Connaitre les articles disponible, consulter les statistiques d'un article": (["article", "[< nom_de_l'article >]"], "Ne pas spécifier de nom d'article renvoie la liste de tous les articles disponibles. Vous ne pouvez consulter les articles que si vous êtes dans un magasin."),
+        "Avoir la description de ses pouvoirs et les utiliser": (["pouvoir", "[< nom_du_pouvoir >", "[< nom_de_l'ennemi >]]"], f"Pour avoir la liste de vos pouvoirs entrez seulement `{PREFIX}pouvoir`. Si vous voulez utiliser un de vos pouvoirs il faut spécifier le nom du pouvoir.\nCertains pouvoir nécessite d'avoir un adversaire : pensez à préciser son nom."),
+        "Effectuer un lancer de dé": (["dé", "[< nombre_de_faces > [", "< nombre_de_dés >]]"], "Par défaut, un dé à 20 faces est lancé."),
+        "Effectuer un lancer dans une capacité": (["capacité", "< nom_de_la_capacité >"], ""),
+        "Changer de lieu": (["lieu", "< nom_du_nouveau_lieu >"], "Pensez à bien préciser l'article. (i.e. : '__la__ plage' et non pas 'plage')"),
+        "Acheter un objet": (["achat", "< nom_de_l'objet >"], "Faites attention à bien orthographier le nom de l'article sans oublier le déterminant."),
+        "Ramasser un objet": (["prend", "< nom_de_l'objet >"], ""),
+        "Donner un objet à un joueur": (["donne", "< nom_du_joueur >", "< nom_de_l'objet > [", "< montant >]"], f"Vous devez être dans le même lieu.\nVous pouvez donner de l'argent à un autre joueur, le nom de l'objet devient 'Argent' et vous devez préciser un troisième paramètre `montant`. La syntaxe devient donc : `{PREFIX}donne < nom_du_joueur > {SEP} Argent {SEP} < montant >`."),
+        "Jetter un objet": (["jette", "< nom_de_l'objet >"], ""),
+        "utiliser un objet": (["utilise", "< nom_de_l'objet >"], "Permet de manger de la nourriture achetée ou d'utiliser du poison."),
+        "Sauvegarder, ou supprimer, une note": (["note", "< contenu_ou_numero >", "< + | - >"], f"Pour ajouter une note utilisez la syntaxe : `{PREFIX}note < contenu > {SEP} +`. Pour supprimer une note entrez : `{PREFIX}note < numéro > {SEP} -`.\nVos notes sont visibles sur vos statistiques."),
+    }
 
-    message.channel.send(embed = answer.to_json())
+    help_display(message, command_help)
 
-odyssee.run()
+
+odyssee.start()
 

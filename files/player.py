@@ -33,7 +33,8 @@ def object_stat(object_name):
     database= data_shop()
     for shop_name in database:
         if object_name in database[shop_name]:
-            return list(database[shop_name][object_name].values()), shop_name in ("auberge", "officine")
+            statistic = database[shop_name][object_name]
+            return list(statistic[0].values()), statistic[1]
 
     return [0 for i in range(8)], False
 
@@ -95,19 +96,23 @@ class Player:
     # --- Modify player --- #
 
     def stat_add(self, stat_to_add): # From Courage to Mana (include Health, but neither money nor color)
-        for i in range(7): self.stat[i] += stat_to_add[i]
+        for i in range(7): self.capacity_modify(i, stat_to_add[i])
 
     def stat_sub(self, stat_to_sub):
-        for i in range(7): self.stat[i] -= stat_to_sub[i]
+        for i in range(7): self.capacity_modify(i, -stat_to_sub[i])
 
     def object_add(self, object_name):
-        stat, eatable = object_stat(object_name)
-        if not eatable: self.inventory.append(object_name)
-        self.stat_add(stat)
+        stat, stockable = object_stat(object_name)
+        if stockable != 2: self.inventory.append(object_name)
+        if stockable != 1: self.stat_add(stat)
 
     def object_del(self, object_name):
         self.inventory.remove(object_name)
         self.stat_sub(object_stat(object_name)[0])
+
+    def object_use(self, object_name):
+        self.inventory.remove(object_name)
+        self.stat_add(object_stat(object_name)[0])
 
     def capacity_modify(self, capacity_index, amount):
         self.stat[capacity_index] += amount
@@ -127,10 +132,7 @@ class Player:
             del(self.note[note_index - 1])
             if not self.note:
                 self.note.append([0, ""])
-            return f"{self.name} a supprimé la note :\n> {content}"
-
-        else:
-            return f"*Erreur : la note n°{note_index} n'existe pas.*"
+            return content
 
 # --------------------------------------------------
 # Database
@@ -139,16 +141,17 @@ class Player:
 # --- Colors --- #
 
 def data_color():
-    return {"noir":0x000000,
-                    "caramel":0xcc9900,
-                    "turquoise":0x00ced1,
-                    "vert":0x00ff00,
-                    "rouge":0xff0000,
-                    "bleu":0x0099ff,
-                    "jaune":0xffd700,
-                    "orange":0xffa500,
-                    "violet":0xff00ff,
-                    "rose":0xff69b4}
+    return {
+        "noir":0x000000,
+        "caramel":0xcc9900,
+        "turquoise":0x00ced1,
+        "vert":0x00ff00,
+        "rouge":0xff0000,
+        "bleu":0x0099ff,
+        "jaune":0xffd700,
+        "orange":0xffa500,
+        "violet":0xff00ff,
+        "rose":0xff69b4}
 
 # --- Administration --- #
 
@@ -159,7 +162,7 @@ def data_admin():
 
 def data_species():
     return [
-        ["Elfe", "Druide", "Elfe sylvestre"],
+        ["Elfe", "Elfe sylvestre", "Druide"],
         ["Humain", "Mage", "Magicienne", "Magicien", "Cavalière", "Cavalier"],
         ["Troll", "Orque", "Ogre", "Cyclope"],
         ["Naine", "Nain"],
@@ -182,7 +185,7 @@ def data_species():
 
 def data_power_by_species():
     return {
-        0: [0, 5, 7],      # Elfe
+        0: [0, 3, 7],      # Elfe
         1: [3, 6],         # Humain
         2: [2, 7],         # Troll
         3: [3, 4],         # Nain 

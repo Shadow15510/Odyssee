@@ -46,6 +46,14 @@ def data_powers():
 
         11: ["Éclair",
                 "foudroye votre adversaire.",
+                True],
+
+        12: ["Protection",
+                "augmente votre capacité à vous défendre.",
+                False],
+
+        13: ["Fatigue",
+                "ralentit votre adversaire.",
                 True]}
 
 def data_power_index(power_name):
@@ -64,6 +72,7 @@ class SpecialPower:
 
     def launch(self):
         msg = ""
+
         if self.index == 0: msg = self.__nyctalopie()
         elif self.index == 1: msg = self.__vol()
         elif self.index == 2: msg = self.__effroi()
@@ -76,6 +85,8 @@ class SpecialPower:
         elif self.index == 9: msg = self.__boule_de_feu()      
         elif self.index == 10: msg = self.__corne_abondance()
         elif self.index == 11: msg = self.__eclair()
+        elif self.index == 12: msg = self.__protection()
+        elif self.index == 13: msg = self.__fatigue()
 
         return msg
             
@@ -109,7 +120,7 @@ class SpecialPower:
             player = self.others[player_id]
             if player.place == self.user.place and player.stat[5] < 100:
                 player.stat[5] = 100
-                msg += f" - {players.name} a retrouvé 100 points de Vie.\n"
+                msg += f" - {player.name} a retrouvé 100 points de Vie.\n"
         return msg
 
     def __chant(self):
@@ -174,4 +185,14 @@ class SpecialPower:
         for capacity in (1, 4):
             self.target.capacity_modify(capacity, -pts)
         return f"{self.target.name} s'est fait foudroyer."
+
+    def __protection(self):
+        pts = 10 * self.user.get_level()
+        user.capacity_modify(4, pts)
+        return f"{self.user.name} gagne en défense."
+
+    def __fatigue(self):
+        pts = 15 * user.get_level()
+        target.capacity_modify(3, -pts)
+        return f"{target.name} perd en rapidité."
        
