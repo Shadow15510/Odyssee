@@ -159,9 +159,10 @@ class Command:
 
         args = analyse(message, self.SEP)
 
-        if len(args) == 2:
-            if args[1] == "+":
-                user.add_note(args[0])
+        if len(args) > 1:
+            if args[-1] == "+":
+                content = f"{self.SEP} ".join(args[:-1])
+                user.add_note(content)
                 return f"__{user.name}__ a ajouté la note :\n> {content}"
             elif args[1] == "-":
                 content = user.del_note(args[0])
@@ -169,8 +170,10 @@ class Command:
                     return f"__{user.name}__ a supprimé la note :\n> {content}"
                 else:
                     return f"*Erreur : la note n°{note_index} n'existe pas.*"
+            else:
+                return f"*Erreur : syntaxe invalide : `{self.PREFIX}note < contenu > {self.SEP} < + | - >`.*"
         else:
-            return f"*Erreur : syntaxe invalide : `+{self.PREFIX}note < contenu > {self.SEP} < + | - >`.*"
+            return f"*Erreur : syntaxe invalide : `{self.PREFIX}note < contenu > {self.SEP} < + | - >`.*"
 
 # --- Game --- #
 
@@ -313,7 +316,7 @@ class Command:
         
         if len(args) == 1:
             if data_powers()[data_power_index(args[0])][2]:
-                return f"*Erreur : syntaxe invalide `{self.PRFIX}pouvoir {args[0]} {self.SEP} < nom_de_l'ennemi >`.*"
+                return f"*Erreur : syntaxe invalide `{self.PREFIX}pouvoir {args[0]} {self.SEP} < nom_de_l'ennemi >`.*"
             return self.specialpower_use(args[0], user)
 
         args[1] = args[1].capitalize()
@@ -336,7 +339,7 @@ class Command:
             return f"__{user.name}__ n'a pas de pouvoir."
         
         all_power = data_powers()
-        rslt = f"Pouvoirs spéciaux de __{user.name}__. Pour utiliser un pouvoir : `{self.PREFIX}pouvoir < nom_du_pouvoir > {self.SEP} [< nom_de_l'ennemi >]`"
+        rslt = f"Pouvoirs spéciaux de __{user.name}__. Pour utiliser un pouvoir :\n`{self.PREFIX}pouvoir < nom_du_pouvoir > [ {self.SEP} < nom_de_l'ennemi >]`"
 
         for power_index in power_available:
             rslt += f"\n - __{all_power[power_index][0]}__ : {all_power[power_index][1]}"
@@ -524,7 +527,7 @@ class Command:
         object_name = analyse(message, self.SEP)
 
         if not object_name:
-            return f"*Erreur : syntaxe invalide `+{('jette', 'utilise')[use]} < nom_de_l'objet >`.*"
+            return f"*Erreur : syntaxe invalide `{self.PREFIX}{('jette', 'utilise')[use]} < nom_de_l'objet >`.*"
 
         object_name = object_name[0]
 
@@ -560,7 +563,10 @@ class Command:
         
         user = self.id_to_object(get_user(message)[1])
 
-        player_name, capacity_name, new_value = analyse(message, self.SEP)
+        try:
+            player_name, capacity_name, new_value = analyse(message, self.SEP)
+        except:
+            return f"*Erreur : syntaxe invalide `{self.PREFIX}modifier < nom_joueur > {self.SEP} < nom_capacité > {self.SEP} < valeur >`*"
         player = self.id_to_object(self.nick_to_id(player_name))
 
         if not player:
@@ -584,7 +590,7 @@ class Command:
                 result += f"point{('', 's')[new_value > 1]} de {capacity_name}."
 
         elif capacity_name == "toutes":
-            result = f"__{player.name}__ {('perd', 'gagne')[new_value > 0]} {new_value} point{('', 's')[new_value > 1]} de Courage, de Force, d'Habileté et de Rapidité."
+            result = f"__{player.name}__ {('perd', 'gagne')[new_value > 0]} {new_value} point{('', 's')[abs(new_value) > 1]} de Courage, de Force, d'Habileté et de Rapidité."
             for i in range(4): player.capacity_modify(i, new_value)
 
         elif capacity_name == "lieu":

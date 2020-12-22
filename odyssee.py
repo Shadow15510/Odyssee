@@ -1,5 +1,5 @@
 # --------------------------------------------------
-# Odyssée (Version 2.6)
+# Odyssée (Version 2.7)
 # by Sha-chan~
 # last version released on the 22 of December 2020
 #
@@ -372,7 +372,7 @@ def aide(message):
         "Avoir la liste des joueurs": (["liste"], ""),
         "Démarrer ou poursuivre un combat": (["combat", "< nom_de_l'adversaire >"], "Lors d'un combat, vous devez impérativement être sur le même lieu que votre adversaire."),
         "Connaitre les articles disponible, consulter les statistiques d'un article": (["article", "[< nom_de_l'article >]"], "Ne pas spécifier de nom d'article renvoie la liste de tous les articles disponibles. Vous ne pouvez consulter les articles que si vous êtes dans un magasin."),
-        "Avoir la description de ses pouvoirs et les utiliser": (["pouvoir", "[< nom_du_pouvoir >", "[< nom_de_l'ennemi >]]"], f"Pour avoir la liste de vos pouvoirs entrez seulement `{PREFIX}pouvoir`. Si vous voulez utiliser un de vos pouvoirs il faut spécifier le nom du pouvoir.\nCertains pouvoir nécessite d'avoir un adversaire : pensez à préciser son nom."),
+        "Avoir la description de ses pouvoirs et les utiliser": (["pouvoir", "[< nom_du_pouvoir > [", "< nom_de_l'ennemi >]]"], f"Pour avoir la liste de vos pouvoirs entrez seulement `{PREFIX}pouvoir`. Si vous voulez utiliser un de vos pouvoirs il faut spécifier le nom du pouvoir.\nCertains pouvoir nécessite d'avoir un adversaire : pensez à préciser son nom."),
         "Effectuer un lancer de dé": (["dé", "[< nombre_de_faces > [", "< nombre_de_dés >]]"], "Par défaut, un dé à 20 faces est lancé."),
         "Effectuer un lancer dans une capacité": (["capacité", "< nom_de_la_capacité >"], ""),
         "Changer de lieu": (["lieu", "< nom_du_nouveau_lieu >"], "Pensez à bien préciser l'article. (i.e. : '__la__ plage' et non pas 'plage')"),
