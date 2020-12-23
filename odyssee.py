@@ -1,7 +1,7 @@
 # --------------------------------------------------
 # Odyssée (Version 2.8)
 # by Sha-chan~
-# last version released on the 22 of December 2020
+# last version released on the 23 of December 2020
 #
 # code provided with licence :
 # GNU General Public Licence v3.0
@@ -10,7 +10,7 @@
 from piscord import Handler, Embed
 from files.command import *
 
-TOKEN = "NjU4Mjg5Njk0NjI2NDE0NTkz.Xf9mDQ.zDjMyDdhxUX1NhuKwcgS3pzvfdQ" 
+# TOKEN = 
 PREFIX = "+"
 SEP = ";"
 
