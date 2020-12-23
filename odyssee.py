@@ -1,5 +1,5 @@
 # --------------------------------------------------
-# Odyssée (Version 2.8)
+# Odyssée (Version 2.9)
 # by Sha-chan~
 # last version released on the 23 of December 2020
 #
@@ -13,6 +13,7 @@ from files.command import *
 # TOKEN = 
 PREFIX = "+"
 SEP = ";"
+ADMIN = ["565177655645962242"]
 
 odyssee = Handler(TOKEN, PREFIX)
 player_file, kick_file, server_id, cmnd = {}, [], 0, None
@@ -88,6 +89,14 @@ def check_server_id(command):
     wrapper.__name__ = command.__name__
     return wrapper
 
+def check_admin(command):
+    def wrapper(message):
+        if message.author.id in ADMIN:
+            return command(message)
+        return message.channel.send("*Erreur : commande non-autorisée.*")
+    
+    wrapper.__name__ = command.__name__
+    return wrapper
 
 @odyssee.event
 def on_ready(message):
@@ -308,48 +317,56 @@ def sauvegarde(message):
 
 
 @odyssee.command
+@check_admin
 def charger(message):
     message.channel.send(cmnd.load(message))
     init_game()
 
 
 @odyssee.command
+@check_admin
 def modifier(message):
     message.channel.send(cmnd.player_modify(message))
     cmnd.save()
 
 
 @odyssee.command
+@check_admin
 def kick(message):
     message.channel.send(cmnd.player_kick(message))
     cmnd.save()
 
 
 @odyssee.command
+@check_admin
 def unkick(message):
     message.channel.send(cmnd.player_unkick(message))
     cmnd.save()
 
 
 @odyssee.command
+@check_admin
 def formatage_kick(message):
     message.channel.send(cmnd.clear_kick(message))
     cmnd.save()
 
 
 @odyssee.command
+@check_admin
 def formatage_joueur(message):
     message.channel.send(cmnd.clear_player(message))
     cmnd.save()
 
 
 @odyssee.command
+@check_admin
 def formatage(message):
     message.channel.send(cmnd.clear_all(message))
     init_game()
 
 
 @odyssee.command
+@check_admin
 def administration(message):
     command_help = {
         "Sauvegarder la partie et obtenir une copie locale": (["sauvegarde"], ""),
@@ -380,11 +397,11 @@ def aide(message):
         "Effectuer un lancer de dé": (["dé", "[< nombre_de_faces > [", "< nombre_de_dés >]]"], "Par défaut, un dé à 20 faces est lancé."),
         "Effectuer un lancer dans une capacité": (["capacité", "< nom_de_la_capacité >"], ""),
         "Changer de lieu": (["lieu", "< nom_du_nouveau_lieu >"], "Pensez à bien préciser l'article. (i.e. : '__la__ plage' et non pas 'plage')"),
-        "Acheter un objet": (["achat", "< nom_de_l'objet >"], ""),
+        "Acheter un objet": (["achat", "< nom_de_l'objet > [", "< nombre > ]"], "Vous ne pouvez acheter plusieurs articles que si l'article désiré est à consommer."),
         "Ramasser un objet": (["prend", "< nom_de_l'objet >"], ""),
         "Donner un objet à un joueur": (["donne", "< nom_du_joueur >", "< nom_de_l'objet > [", "< montant >]"], f"Vous devez être dans le même lieu.\nVous pouvez donner de l'argent à un autre joueur, le nom de l'objet devient 'Argent' et vous devez préciser un troisième paramètre `montant`. La syntaxe devient donc : `{PREFIX}donne < nom_du_joueur > {SEP} Argent {SEP} < montant >`."),
         "Jetter un objet": (["jette", "< nom_de_l'objet >"], ""),
-        "utiliser un objet": (["utilise", "< nom_de_l'objet >"], "Permet de manger de la nourriture achetée ou d'utiliser du poison."),
+        "utiliser un objet": (["utilise", "< nom_de_l'objet > [", "< nombre >]"], "Permet de manger de la nourriture achetée ou d'utiliser du poison. Préciser un nombre consommera autant d'unité que précisée de l'objet visé."),
         "Sauvegarder, ou supprimer, une note": (["note", "< contenu_ou_numero >", "< + | - >"], f"Pour ajouter une note utilisez la syntaxe : `{PREFIX}note < contenu > {SEP} +`. Pour supprimer une note entrez : `{PREFIX}note < numéro > {SEP} -`.\nVos notes sont visibles sur vos statistiques."),
     }
 

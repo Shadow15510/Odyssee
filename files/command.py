@@ -243,20 +243,20 @@ class Command:
                 return f"__{target.name}__ subit {pt_damage} dégâts.\n"
 
         def turn(player, target):
-            result = f"__{player.name}__ s'avance pour attaquer…\n"
+            result = ""
             if phase_2(player):
                 result += f"Le coup porte !\n"
                 result += comment_on_damage(player, target, phase_3(player, target))
-
-                if target.isalive():
-                    result += f"__{target.name}__ est toujours vivant.\n"
     
-                else:
+                if not target.isalive():
                     inventory = target.inventory[:]
-                    result += f"**Butin**\n__{player.name}__ fouille le cadavre et récupère\n - {target.stat[7]} Drachmes."
+                    result += f"\n**Butin**\n__{player.name}__ fouille le cadavre et récupère :\n - {target.stat[7]} Drachmes."
                     if inventory:
-                        result += f"\n - " + "\n - ".join(inventory)
-                        for item in inventory: player.object_add(item)
+                        result += f"\n - " + "\n - ".join([item[0] + ('', f' ({item[1]})')[item[1] != -1] for item in inventory])
+                        for item in inventory:
+                            if item[1] != -1:
+                                for _ in range(item[1]): player.object_add(item[0])
+                            else: player.object_add(item[0])
 
                     player.stat[7] += target.stat[7]
                     self.players.pop(target.id)
@@ -451,24 +451,34 @@ class Command:
         if not shop_name:
             return f"*Erreur : {user.name} n'est pas dans un magasin.*"
         
-        item_name = analyse(message, self.SEP)
-        if not item_name:
-            return f"*Erreur : syntaxe invalide `{self.PREFIX}achat < nom_de_l'objet >`."
+        args = analyse(message, self.SEP)
 
-        item_name = item_name[0]
-        official_name, stat, check = object_stat(item_name, shop_name)
+        if len(args) == 1:
+            item_name, nb = args[0].lower(), 1
+        elif len(args) == 2:
+            item_name, nb = args[0].lower(), args[1]
+        else:
+            return f"*Erreur : syntaxe invalide `{self.PREFIX}achat < nom_de_l'objet > [ {self.SEP} < nombre >]`."
+
+        _, stat, check = object_stat(item_name, shop_name)
+        if nb <= 0: nb = 1
 
         if check == -1:
             return f"*Erreur : cet objet n'est pas vendu ici. Consultez les objets disponibles via : `{self.PREFIX}article`.*"
-        elif check != 1 and (user.have(item_name) + 1 or user.have(official_name) + 1):
-            return f"*Erreur : {user.name} a déjà cet objet.*"
-        elif user.stat[7] < abs(stat[7]):
+        elif user.stat[7] < nb * abs(stat[7]):
             return f"*Erreur : {user.name} n'a pas assez de Drachmes.*"
         else:
-            if check == 1: user.object_add(official_name)
-            else: user.object_add(item_name)
-            user.capacity_modify(7, stat[7])
-            return f"__{user.name}__ a acheté {item_name} pour {abs(stat[7])} Drachmes."
+            if check == 1:
+                for _ in range(nb): user.object_add(item_name)
+            else:
+                if nb > 1: return f"*Erreur : {user.name} ne peut pas acheter plusieurs fois cet objet : '{item_name}'.*"
+                if user.have(item_name)[0] == -1:
+                    user.object_add(item_name)
+                else:
+                    return f"*Erreur : {user.name} a déjà cet objet.*"
+
+            user.capacity_modify(7, nb * stat[7])
+            return f"__{user.name}__ a acheté {item_name}{('', f' ({nb})')[nb > 1]} pour {nb * abs(stat[7])} Drachmes."
 
     def object_take(self, message):
         user = self.id_to_object(get_user(message)[1])
@@ -482,12 +492,14 @@ class Command:
 
         object_name = object_name[0]
         
-        if user.have(object_name) + 1 and object_stat(object_name)[2] != 1:
+        index, _, stockable = user.have(object_name)
+        if index != -1 and stockable != 1:
             return f"*Erreur : {user.name} a déjà cet objet.*"
+        else:
+            user.object_add(object_name)
+            return f"__{user.name}__ prend {object_name}."
+            
         
-        user.object_add(object_name)
-        return f"__{user.name}__ prend {object_name}."
-
     def object_give(self, message):
         user = self.id_to_object(get_user(message)[1])
         if not user:
@@ -517,14 +529,14 @@ class Command:
             
         else:
             object_name = args[1]
-            if not user.have(object_name) + 1:
+            if user.have(object_name)[0] == -1:
                 return f"*Erreur : {user.name} ne possède pas cet objet : '{object_name}'.*"
-            elif player.have(object_name) + 1 and object_stat(object_name)[2] != 1:
+            elif player.have(object_name)[0] != -1:
                 return f"*Erreur : {player.name} a déjà cet objet.*"
-        
-            user.object_del(object_name)
-            player.object_add(object_name)
-        
+            else:
+                user.object_del(object_name)
+                player.object_add(object_name)
+                
             return f"__{user.name}__ donne {object_name} à __{player.name}__."
 
     def object_throw(self, message, use):
@@ -532,23 +544,33 @@ class Command:
         if not user:
             return f"*Erreur : {get_user(message)[0]} n'est pas un joueur enregistré.*"
         
-        object_name = analyse(message, self.SEP)
+        args = analyse(message, self.SEP)
 
-        if not object_name:
-            return f"*Erreur : syntaxe invalide `{self.PREFIX}{('jette', 'utilise')[use]} < nom_de_l'objet >`.*"
-
-        object_name = object_name[0]
-
-        if not user.have(object_name) + 1:
-            return f"*Erreur : {user.name} ne possède pas cet objet : '{object_name}'*."
-
-        if use:
-            if object_stat(object_name)[2] != 1: return f"*Erreur : cet objet ne peut pas être utilisé.*"
-            user.object_use(object_name)
+        if len(args) == 1:
+            object_name, nb = args[0], 1
+        elif len(args) == 2:
+            object_name, nb = args[0], args[1]
         else:
-            user.object_del(object_name)
-        
-        return f"__{user.name}__ {('jette', 'utilise')[use]} {object_name}."
+            return f"*Erreur : syntaxe invalide `{self.PREFIX}{('jette', 'utilise')[use]} < nom_de_l'objet > {('', f'[ {self.SEP} < nombre >]')[use]}`.*"
+
+        if nb <= 0: nb = 1
+        index, _, check = user.have(object_name)
+
+        if index == -1:
+            return f"*Erreur : {user.name} ne possède pas cet objet : '{object_name}'.*"
+
+        elif use:
+            if check != 1:
+                return f"*Erreur : cet objet ne peut pas être utilisé.*"
+            elif check == 1 and nb > user.inventory[index][1]:
+                return f"*Erreur : {user.name} ne possède pas en assez grande quantité l'objet : '{object_name}'.*"
+            else:
+                for _ in range(nb): user.object_use(object_name)
+                    
+        else:
+            user.object_del(object_name) 
+
+        return f"__{user.name}__ {('jette', 'utilise')[use]} {object_name} {('', f'({nb})')[use]}."
 
 
 # --- Administration --- #
@@ -560,15 +582,10 @@ class Command:
         print("Partie sauvegardée.")
 
     def load(self, message):
-        if get_user(message)[1] not in data_admin():
-            return "*< commande non autorisée >*"
         save_send(message.content[9:])
         return "Partie chargée."
 
     def player_modify(self, message):
-        if get_user(message)[1] not in data_admin():
-            return "*< commande non autorisée >*"
-        
         user = self.id_to_object(get_user(message)[1])
 
         try:
@@ -586,7 +603,7 @@ class Command:
         
         if capacity_name in capacity_list:
             player.capacity_modify(capacity_list.index(capacity_name), new_value)
-            result = f"__{player.name}__ {('perd', 'gagne')[new_value > 0]} {new_value} "
+            result = f"__{player.name}__ {('perd', 'gagne')[new_value > 0]} {abs(new_value)} "
             
             if capacity_name == "habileté":
                 result += f"point{('', 's')[new_value > 1]} d'Habileté."
@@ -606,18 +623,19 @@ class Command:
             result = f"__{player.name}__ se dirige vers {new_value}."
 
         elif capacity_name == "objet+":
-            if new_value not in player.inventory:
+            index, _, stockable = player.have(new_value)
+            if index == -1 or stockable == 1:
                 player.object_add(new_value)
                 result = f"__{player.name}__ reçoit {new_value}."
             else:
-                resutl = f"__{player.name}__ a déjà {new_value}."
+                result = f"__{player.name}__ a déjà cet objet : '{new_value}'."
 
         elif capacity_name == "objet-":
-            if new_value in player.inventory:
+            if player.have(new_value)[0] != -1:
                 player.object_del(new_value)
                 result = f"__{player.name}__ a perdu {new_value}."
             else:
-                result = f"__{player.name}__ ne possède pas cet objet : '{new_value}'."
+                result = f"__{player.name}__ ne possède pas cet objet : '{new_value}'."  
 
         elif capacity_name == "nom":
             old_name = player.name
@@ -634,9 +652,6 @@ class Command:
         return result
 
     def player_kick(self, message):
-        if get_user(message)[1] not in data_admin():
-            return "*< commande non autorisée >*"
-
         player_name = analyse(message, self.SEP)[0]
         player_id = self.nick_to_id(player_name)
         
@@ -648,9 +663,6 @@ class Command:
         return f"{player_name} a été kické."
 
     def player_unkick(self, message):
-        if get_user(message)[1] not in data_admin():
-            return "*< commande non autorisée >*"
-
         player_id = int(analyse(message, self.SEP)[0])
         for i in self.kick:
             if i == player_id:
@@ -660,25 +672,16 @@ class Command:
         return f"*Erreur : le joueur ciblé n'est pas kické.*"
 
     def clear_kick(self, message):
-        if get_user(message)[1] not in data_admin():
-            return "*< commande non autorisée >*"
-
         self.kick = []
         
         return "Tous les joueurs kickés ont été unkick."
 
     def clear_player(self, message):
-        if get_user(message)[1] not in data_admin():
-            return "*< commande non autorisée >*"
-
         self.players = {}
         
         return "Tous les joueurs ont été supprimés."
 
     def clear_all(self, message):
-        if get_user(message)[1] not in data_admin():
-            return "*< commande non autorisée >*"
-
         self.server_id = 0
         save_delete()
         

@@ -51,7 +51,7 @@ def object_stat(object_name, shop_name=None):
         for shop_name in database:
             name, stat, check = search(database[shop_name], object_name)
             if check != -1: return name, stat, check
-        return "", [0 for i in range(8)], -1
+        return "", [0 for _ in range(8)], -1
         
             
 
@@ -112,11 +112,15 @@ class Player:
         return []
 
     def have(self, object_name):
+        name, _, _ = object_stat(object_name)
+        if name: object_name = name
+
         for index, item in enumerate(self.inventory):
-            if item[0] == object_name:
-                return index
-        return -1
-        
+            name, stat, stockable = object_stat(item[0])
+            if (stockable == -1 and item[0] == object_name) or name == object_name: 
+                return index, stat, stockable
+        return -1, -1, -1
+
     # --- Modify player --- #
 
     def stat_add(self, stat_to_add): # From Courage to Mana (include Health, but neither money nor color)
@@ -126,21 +130,21 @@ class Player:
         for i in range(7): self.capacity_modify(i, -stat_to_sub[i])
 
     def object_add(self, object_name):
+        index = self.have(object_name)[0]
         _, stat, stockable = object_stat(object_name)
-        if stockable == 1:
-            index = self.have(object_name)
-            
+        if stockable == 1:           
             if index + 1:
                 self.inventory[index][1] += 1
             else:
                 self.inventory.append([object_name, 1])
+            return True
         else:
             if stockable != 2: self.inventory.append([object_name, -1])
             self.stat_add(stat)
 
+
     def object_del(self, object_name):
-        _, stat, stockable = object_stat(object_name)
-        index = self.have(object_name)
+        index, stat, stockable = self.have(object_name)
         if stockable == 1:
             self.inventory[index][1] -= 1
             if self.inventory[index][1] <= 0: self.inventory.pop(index)
@@ -149,7 +153,7 @@ class Player:
             self.stat_sub(stat)
 
     def object_use(self, object_name):
-        index = self.have(object_name)
+        index = self.have(object_name)[0]
         self.inventory[index][1] -= 1
         if self.inventory[index][1] <= 0:
             self.inventory.pop(index)
@@ -194,11 +198,6 @@ def data_color():
         "orange":0xffa500,
         "violet":0xff00ff,
         "rose":0xff69b4}
-
-# --- Administration --- #
-
-def data_admin():
-    return [565177655645962242]
 
 # --- Species --- #
 
