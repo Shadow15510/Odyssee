@@ -1,3 +1,52 @@
+# --- Species --- #
+
+def data_species():
+    return [
+        ["Elfe", "Elfe sylvestre", "Druide"],
+        ["Humain", "Mage", "Magicienne", "Magicien", "Cavalière", "Cavalier"],
+        ["Troll", "Orque", "Ogre", "Cyclope"],
+        ["Naine", "Nain"],
+        ["Gnome", "Gobelin"],
+        ["Nazgul", "Cavalière noire", "Cavalier noir"],
+        ["Succube", "Incube"],
+        ["Vampire"],
+        ["Hobbit"],
+        ["Satyre"],
+        ["Nymphe"],
+        ["Guivre"],
+        ["Centaure"],
+        ["Dragon", "Dragonne"],
+        ["Minotaure"],
+        ["Efrit", "Démon"],
+        ["Follasse"],
+        ["Dieu", "Déesse"]]
+
+
+# --- Special powers --- #
+
+def data_power_by_species():
+    return {
+        0: [0, 3, 7],      # Elfe
+        1: [3, 6],         # Humain
+        2: [2, 7],         # Troll
+        3: [3, 4],         # Nain 
+        4: [1, 3, 5],      # Gnome
+        5: [1, 2, 6],      # Nazgul
+        6: [3, 4, 8],      # Succube
+        7: [0, 2, 7],      # Vampire 
+        8: [4],            # Hobbit
+        9: [1, 4],         # Satyre
+        10: [4, 7, 8],     # Nymphe
+        11: [6],           # Guivre
+        12: [0, 4, 8],     # Centaure
+        13: [2, 9],        # Dragon
+        14: [2, 6],        # Minotaure
+        15: [3, 5, 6],     # Démon
+        16: [0, 3],        # Follasse
+        17: [3, 10, 11],   # Dieu
+        }
+
+
 def data_powers():
     return {
         0: ["Nyctalopie",
@@ -56,10 +105,12 @@ def data_powers():
                 "ralentit votre adversaire.",
                 True]}
 
+
 def data_power_index(power_name):
     powers = data_powers()
     for i in powers:
         if powers[i][0] == power_name: return i
+
 
 class SpecialPower:
 

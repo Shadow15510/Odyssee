@@ -8,14 +8,14 @@
 # --------------------------------------------------
 
 from piscord import Handler, Embed
+import json
+
 from files.command import *
 
-# TOKEN = 
-PREFIX = "+"
-SEP = ";"
-ADMIN = ["565177655645962242"]
+with open("Odyssée/config.json", "r") as file:
+    config = json.load(file)
 
-odyssee = Handler(TOKEN, PREFIX)
+odyssee = Handler(config["TOKEN"], config["PREFIX"])
 player_file, kick_file, server_id, cmnd = {}, [], 0, None
 
 
@@ -41,7 +41,7 @@ def init_game():
         save_send("[[],[],0]")
         print("> save file didn't found\n> new game start")
 
-    cmnd = Command(player_file, kick_file, server_id, PREFIX, SEP)
+    cmnd = Command(player_file, kick_file, server_id, config["PREFIX"], config["SEP"])
 
 
 def help_display(message, command_help):
@@ -51,7 +51,7 @@ def help_display(message, command_help):
 
     def formating_args(command):
         if len(command):
-            return f" {SEP} ".join(command)
+            return f" {config['SEP']} ".join(command)
         else:
             return ""
 
@@ -64,7 +64,7 @@ def help_display(message, command_help):
     if len(args) != 2:
         answer.description = "Liste des commandes disponibles"
         for i in command_help:
-            answer.add_field(name=i, value=f"`{PREFIX}{command_help[i][0][0]} {formating_args(command_help[i][0][1:])}`", inline=False)
+            answer.add_field(name=i, value=f"`{config['PREFIX']}{command_help[i][0][0]} {formating_args(command_help[i][0][1:])}`", inline=False)
     else:
         key = auto_detect(command_help, args[1])
         if not key:
@@ -72,7 +72,7 @@ def help_display(message, command_help):
             return None
         else:
             answer.description = f"Aide détaillée : {key.lower()}"
-            answer.add_field(name="Syntaxe", value=f"`{PREFIX}{command_help[key][0][0]} {formating_args(command_help[key][0][1:])}`", inline=True)
+            answer.add_field(name="Syntaxe", value=f"`{config['PREFIX']}{command_help[key][0][0]} {formating_args(command_help[key][0][1:])}`", inline=True)
             answer.add_field(name="Détails d'utilisation", value=(command_help[key][1], "< aucun >")[not command_help[key][1]], inline=True)
 
     message.channel.send(embed = answer.to_json())
@@ -91,7 +91,7 @@ def check_server_id(command):
 
 def check_admin(command):
     def wrapper(message):
-        if message.author.id in ADMIN:
+        if message.author.id in config["ADMIN"]:
             return command(message)
         return message.channel.send("*Erreur : commande non-autorisée.*")
     
@@ -100,7 +100,7 @@ def check_admin(command):
 
 @odyssee.event
 def on_ready(message):
-    odyssee.set_presence(f"{PREFIX}aide", 3)
+    odyssee.set_presence(f"{config['PREFIX']}aide", 3)
     init_game()
 
 # --------------------------------------------------
@@ -387,22 +387,22 @@ def aide(message):
     command_help = {
         "Créer un nouveau joueur": (["nouveau", "< nom_de_l'espèce >"], ""),
         "Changer son pseudo": (["pseudo", "< nouveau_pseudo >"], ""),
-        "Connaitre ses statistiques ou celles d'un joueur": (["stat", "[< nom_du_joueur >]"], f"Pour voir vos propre stat entrez uniquement `{PREFIX}stat`."),
-        "Changer sa couleur": (["couleur", "< nom_de_la_couleur >"], f"Vous pouvez également entrer le code hexadécimal en utilisant `{PREFIX}couleur 0xRRVVBB`."),
-        "Connaître les espèces enregistrées et changer son espèce": (["espèce", "[< nouvelle_espèce >]"], f"Pour voir la liste entrez seulement `{PREFIX}espèce`."),
+        "Connaitre ses statistiques ou celles d'un joueur": (["stat", "[< nom_du_joueur >]"], f"Pour voir vos propre stat entrez uniquement `{config['PREFIX']}stat`."),
+        "Changer sa couleur": (["couleur", "< nom_de_la_couleur >"], f"Vous pouvez également entrer le code hexadécimal en utilisant `{config['PREFIX']}couleur 0xRRVVBB`."),
+        "Connaître les espèces enregistrées et changer son espèce": (["espèce", "[< nouvelle_espèce >]"], f"Pour voir la liste entrez seulement `{config['PREFIX']}espèce`."),
         "Avoir la liste des joueurs": (["liste"], ""),
         "Démarrer ou poursuivre un combat": (["combat", "< nom_de_l'adversaire >"], "Lors d'un combat, vous devez impérativement être sur le même lieu que votre adversaire."),
         "Connaitre les articles disponible, consulter les statistiques d'un article": (["article", "[< nom_de_l'article >]"], "Ne pas spécifier de nom d'article renvoie la liste de tous les articles disponibles. Vous ne pouvez consulter les articles que si vous êtes dans un magasin."),
-        "Avoir la description de ses pouvoirs et les utiliser": (["pouvoir", "[< nom_du_pouvoir > [", "< nom_de_l'ennemi >]]"], f"Pour avoir la liste de vos pouvoirs entrez seulement `{PREFIX}pouvoir`. Si vous voulez utiliser un de vos pouvoirs il faut spécifier le nom du pouvoir.\nCertains pouvoir nécessite d'avoir un adversaire : pensez à préciser son nom."),
+        "Avoir la description de ses pouvoirs et les utiliser": (["pouvoir", "[< nom_du_pouvoir > [", "< nom_de_l'ennemi >]]"], f"Pour avoir la liste de vos pouvoirs entrez seulement `{config['PREFIX']}pouvoir`. Si vous voulez utiliser un de vos pouvoirs il faut spécifier le nom du pouvoir.\nCertains pouvoir nécessite d'avoir un adversaire : pensez à préciser son nom."),
         "Effectuer un lancer de dé": (["dé", "[< nombre_de_faces > [", "< nombre_de_dés >]]"], "Par défaut, un dé à 20 faces est lancé."),
         "Effectuer un lancer dans une capacité": (["capacité", "< nom_de_la_capacité >"], ""),
         "Changer de lieu": (["lieu", "< nom_du_nouveau_lieu >"], "Pensez à bien préciser l'article. (i.e. : '__la__ plage' et non pas 'plage')"),
         "Acheter un objet": (["achat", "< nom_de_l'objet > [", "< nombre > ]"], "Vous ne pouvez acheter plusieurs articles que si l'article désiré est à consommer."),
         "Ramasser un objet": (["prend", "< nom_de_l'objet >"], ""),
-        "Donner un objet à un joueur": (["donne", "< nom_du_joueur >", "< nom_de_l'objet > [", "< montant >]"], f"Vous devez être dans le même lieu.\nVous pouvez donner de l'argent à un autre joueur, le nom de l'objet devient 'Argent' et vous devez préciser un troisième paramètre `montant`. La syntaxe devient donc : `{PREFIX}donne < nom_du_joueur > {SEP} Argent {SEP} < montant >`."),
+        "Donner un objet à un joueur": (["donne", "< nom_du_joueur >", "< nom_de_l'objet > [", "< montant >]"], f"Vous devez être dans le même lieu.\nVous pouvez donner de l'argent à un autre joueur, le nom de l'objet devient 'Argent' et vous devez préciser un troisième paramètre `montant`. La syntaxe devient donc : `{config['PREFIX']}donne < nom_du_joueur > {config['SEP']} Argent {config['SEP']} < montant >`."),
         "Jetter un objet": (["jette", "< nom_de_l'objet >"], ""),
         "utiliser un objet": (["utilise", "< nom_de_l'objet > [", "< nombre >]"], "Permet de manger de la nourriture achetée ou d'utiliser du poison. Préciser un nombre consommera autant d'unité que précisée de l'objet visé."),
-        "Sauvegarder, ou supprimer, une note": (["note", "< contenu_ou_numero >", "< + | - >"], f"Pour ajouter une note utilisez la syntaxe : `{PREFIX}note < contenu > {SEP} +`. Pour supprimer une note entrez : `{PREFIX}note < numéro > {SEP} -`.\nVos notes sont visibles sur vos statistiques."),
+        "Sauvegarder, ou supprimer, une note": (["note", "< contenu_ou_numero >", "< + | - >"], f"Pour ajouter une note utilisez la syntaxe : `{config['PREFIX']}note < contenu > {config['SEP']} +`. Pour supprimer une note entrez : `{config['PREFIX']}note < numéro > {config['SEP']} -`.\nVos notes sont visibles sur vos statistiques."),
     }
 
     help_display(message, command_help)
