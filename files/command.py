@@ -197,7 +197,8 @@ class Command:
             return self.fight_continue(user, enemy_name.capitalize())
         
         enemy_name = enemy_name.capitalize()
-        self.players.update({enemy_id : Player(enemy_id, enemy_name, "Ennemi", stat_gen(user.get_level(), user.stat[8], True), user.place)})
+        level = user.get_level()
+        self.players.update({enemy_id : Player(enemy_id, enemy_name, "Ennemi", stat_gen(randint(level - 1, level + 1), user.stat[8], True), user.place)})
 
         return f"__{user.name}__ se prépare pour combattre {enemy_name}.\nEntrez `{self.PREFIX}combat {enemy_name}` pour attaquer."
 
@@ -252,10 +253,11 @@ class Command:
     
                 else:
                     inventory = target.inventory[:]
-                    result += f"__{player.name}__ fouille le cadavre et récupère {target.stat[7]} Drachmes."
+                    result += f"**Butin**\n__{player.name}__ fouille le cadavre et récupère\n - {target.stat[7]} Drachmes."
                     if inventory:
-                        result += f"\n__{player.name}__ trouve\n - " + "\n - ".join(inventory)
+                        result += f"\n - " + "\n - ".join(inventory)
                         for item in inventory: player.object_add(item)
+
                     player.stat[7] += target.stat[7]
                     self.players.pop(target.id)
                     return result, True
@@ -421,18 +423,19 @@ class Command:
     def show_articles(self, message):
         user = self.id_to_object(get_user(message)[1])
         if not user:
-            return f"*Erreur : {get_user(message)[0]} n'est pas un joueur enregistré.*", -1
+            return f"*Erreur : {get_user(message)[0]} n'est pas un joueur enregistré.*", -1, 2
 
         shop_name = user.inshop()
         if not shop_name:
-            return f"*Erreur : {user.name} n'est pas dans un magasin.*", -1
+            return f"*Erreur : {user.name} n'est pas dans un magasin.*", -1, 2
 
         item_name = analyse(message, self.SEP)
         
         if item_name:
             item_name = item_name[0]
-            if item_name in data_shop()[shop_name]:
-                return (item_name, object_stat(item_name)), user.stat[8], 1
+            _, stat, check = object_stat(item_name)
+            if check != -1:
+                return (item_name, (stat, check)), user.stat[8], 1
             else:
                 return f"*Erreur : cet objet n'est pas vendu ici. Consultez la liste des objets disponibles via : `{self.PREFIX}article`.*", -1, 2
 
@@ -453,14 +456,19 @@ class Command:
             return f"*Erreur : syntaxe invalide `{self.PREFIX}achat < nom_de_l'objet >`."
 
         item_name = item_name[0]
-        
-        if item_name not in data_shop()[shop_name]:
-            return f"*Erreur : cet objet n'est pas vendu ici. Consultez les objets disponibles via : `{self.PREFIX}article`.*"
+        official_name, stat, check = object_stat(item_name, shop_name)
 
-        price = object_stat(item_name)[0][7]
-        user.object_add(item_name)
-        user.stat[7] += price
-        return f"__{user.name}__ a acheté {item_name} pour {abs(price)} Drachmes."
+        if check == -1:
+            return f"*Erreur : cet objet n'est pas vendu ici. Consultez les objets disponibles via : `{self.PREFIX}article`.*"
+        elif check != 1 and (user.have(item_name) + 1 or user.have(official_name) + 1):
+            return f"*Erreur : {user.name} a déjà cet objet.*"
+        elif user.stat[7] < abs(stat[7]):
+            return f"*Erreur : {user.name} n'a pas assez de Drachmes.*"
+        else:
+            if check == 1: user.object_add(official_name)
+            else: user.object_add(item_name)
+            user.capacity_modify(7, stat[7])
+            return f"__{user.name}__ a acheté {item_name} pour {abs(stat[7])} Drachmes."
 
     def object_take(self, message):
         user = self.id_to_object(get_user(message)[1])
@@ -474,7 +482,7 @@ class Command:
 
         object_name = object_name[0]
         
-        if object_name in user.inventory:
+        if user.have(object_name) + 1 and object_stat(object_name)[2] != 1:
             return f"*Erreur : {user.name} a déjà cet objet.*"
         
         user.object_add(object_name)
@@ -509,9 +517,9 @@ class Command:
             
         else:
             object_name = args[1]
-            if object_name not in user.inventory:
+            if not user.have(object_name) + 1:
                 return f"*Erreur : {user.name} ne possède pas cet objet : '{object_name}'.*"
-            elif object_name in player.inventory:
+            elif player.have(object_name) + 1 and object_stat(object_name)[2] != 1:
                 return f"*Erreur : {player.name} a déjà cet objet.*"
         
             user.object_del(object_name)
@@ -531,11 +539,11 @@ class Command:
 
         object_name = object_name[0]
 
-        if object_name not in user.inventory:
+        if not user.have(object_name) + 1:
             return f"*Erreur : {user.name} ne possède pas cet objet : '{object_name}'*."
 
         if use:
-            if object_stat(object_name)[1] != 1: return f"*Erreur : cet objet ne peut pas être utilisé.*"
+            if object_stat(object_name)[2] != 1: return f"*Erreur : cet objet ne peut pas être utilisé.*"
             user.object_use(object_name)
         else:
             user.object_del(object_name)
@@ -590,7 +598,7 @@ class Command:
                 result += f"point{('', 's')[new_value > 1]} de {capacity_name}."
 
         elif capacity_name == "toutes":
-            result = f"__{player.name}__ {('perd', 'gagne')[new_value > 0]} {new_value} point{('', 's')[abs(new_value) > 1]} de Courage, de Force, d'Habileté et de Rapidité."
+            result = f"__{player.name}__ {('perd', 'gagne')[new_value > 0]} {abs(new_value)} point{('', 's')[abs(new_value) > 1]} de Courage, de Force, d'Habileté et de Rapidité."
             for i in range(4): player.capacity_modify(i, new_value)
 
         elif capacity_name == "lieu":

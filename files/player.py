@@ -11,7 +11,8 @@ from files.save import *
 
 # --- Statistics generator --- #
 
-def stat_gen(level = 1, color = None, enemy = False):
+def stat_gen(level=1, color=None, enemy=False):
+    if level < 1: level = 1
     if not color: color = randint(0, 16777215)
     stat = [randint(20*(level-1), 20*level) for i in range(4)]
     stat.append(0)
@@ -29,32 +30,50 @@ def roll_die(faces = 20, nb = 1):
 
 # --- Get the object's statistic --- #
 
-def object_stat(object_name):
-    database= data_shop()
-    for shop_name in database:
-        if object_name in database[shop_name]:
-            statistic = database[shop_name][object_name]
-            return list(statistic[0].values()), statistic[1]
+def object_stat(object_name, shop_name=None):
+    def auto_complete(database, name):
+        match = {len(item_name): item_name for item_name in database if item_name in name}
+        if match:
+            return match[max(match.keys())]
 
-    return [0 for i in range(8)], False
+    def search(shop, object_name):
+        name = auto_complete(shop, object_name)
+        if name:
+            statistic = shop[name]
+            return name, list(statistic[0].values()), statistic[1]
+
+        return "", [0 for i in range(8)], -1
+
+    database = data_shop()
+    if shop_name:
+        return search(database[shop_name], object_name)
+    else:
+        for shop_name in database:
+            name, stat, check = search(database[shop_name], object_name)
+            if check != -1: return name, stat, check
+        return "", [0 for i in range(8)], -1
+        
+            
 
 # --------------------------------------------------
 # Player object
 # --------------------------------------------------
 
 class Player:
-    def __init__(self, identifier, name, species, stat = stat_gen(), place = "< inconnu >", inventory = None, note = [[0, ""]]):
+    def __init__(self, identifier, name, species, stat=None, place="< inconnu >", inventory=None, note=None):
         self.id = identifier
         self.name = name
-        self.stat = stat
         self.species = species
         self.place = place
-        self.note = note
+
+        if stat: self.stat = stat
+        else: self.stat = stat_gen()
         
-        if inventory:
-            self.inventory = inventory
-        else:
-            self.inventory = list()
+        if inventory: self.inventory = inventory
+        else: self.inventory = list()
+
+        if note: self.note = note
+        else: self.note = [[0, ""]]
 
     # --- Get information from player --- #
 
@@ -90,8 +109,13 @@ class Player:
         for species in power_by_species:
             if self.species in species_list[species]:
                 return power_by_species[species]
-
         return []
+
+    def have(self, object_name):
+        for index, item in enumerate(self.inventory):
+            if item[0] == object_name:
+                return index
+        return -1
         
     # --- Modify player --- #
 
@@ -102,17 +126,35 @@ class Player:
         for i in range(7): self.capacity_modify(i, -stat_to_sub[i])
 
     def object_add(self, object_name):
-        stat, stockable = object_stat(object_name)
-        if stockable != 2: self.inventory.append(object_name)
-        if stockable != 1: self.stat_add(stat)
+        _, stat, stockable = object_stat(object_name)
+        if stockable == 1:
+            index = self.have(object_name)
+            
+            if index + 1:
+                self.inventory[index][1] += 1
+            else:
+                self.inventory.append([object_name, 1])
+        else:
+            if stockable != 2: self.inventory.append([object_name, -1])
+            self.stat_add(stat)
 
     def object_del(self, object_name):
-        self.inventory.remove(object_name)
-        self.stat_sub(object_stat(object_name)[0])
+        _, stat, stockable = object_stat(object_name)
+        index = self.have(object_name)
+        if stockable == 1:
+            self.inventory[index][1] -= 1
+            if self.inventory[index][1] <= 0: self.inventory.pop(index)
+        else:
+            self.inventory.pop(index)
+            self.stat_sub(stat)
 
     def object_use(self, object_name):
-        self.inventory.remove(object_name)
-        self.stat_add(object_stat(object_name)[0])
+        index = self.have(object_name)
+        self.inventory[index][1] -= 1
+        if self.inventory[index][1] <= 0:
+            self.inventory.pop(index)
+
+        self.stat_add(object_stat(object_name)[1])
 
     def capacity_modify(self, capacity_index, amount):
         self.stat[capacity_index] += amount

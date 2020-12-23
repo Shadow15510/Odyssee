@@ -1,5 +1,5 @@
 # --------------------------------------------------
-# Odyssée (Version 2.7)
+# Odyssée (Version 2.8)
 # by Sha-chan~
 # last version released on the 22 of December 2020
 #
@@ -10,7 +10,7 @@
 from piscord import Handler, Embed
 from files.command import *
 
-# TOKEN = 
+TOKEN = "NjU4Mjg5Njk0NjI2NDE0NTkz.Xf9mDQ.zDjMyDdhxUX1NhuKwcgS3pzvfdQ" 
 PREFIX = "+"
 SEP = ";"
 
@@ -169,7 +169,7 @@ def article(message):
 
     if not message_type:
         answer = Embed()
-        answer.title = info[0]
+        answer.title = info[0].capitalize()
         answer.description = "Listes des articles disponibles"
         answer.color = color
 
@@ -180,14 +180,14 @@ def article(message):
             for stat_name in item_stat:
                 if item_stat[stat_name]: stat += f"{stat_name} : {item_stat[stat_name]}, "
              
-            answer.add_field(name=item_name, value=stat[:-2], inline=False)
+            answer.add_field(name=item_name.capitalize(), value=stat[:-2], inline=False)
             
         message.channel.send(embed = answer.to_json())
         return None
 
     elif message_type == 1:
         answer = Embed()
-        answer.title = info[0]
+        answer.title = info[0].capitalize()
         answer.description = "Détails de l'article"
         answer.color = color
 
@@ -224,7 +224,10 @@ def stat(message):
     answer.add_field(name="Lieu", value=info[12], inline=True)
 
     if len(info[13]):
-        answer.add_field(name="Inventaire", value=" - " + "\n - ".join(info[13]), inline=True)
+        object_in_inventory = ""
+        for item in info[13]:
+            object_in_inventory += f" - {item[0]} {('', f' ({item[1]})')[item[1] != -1]}\n"
+        answer.add_field(name="Inventaire", value=object_in_inventory, inline=True)
     else:
         answer.add_field(name="Inventaire", value="< vide >", inline=True)
     
@@ -297,6 +300,7 @@ def utilise(message):
 
 
 # --- Administration --- #
+
 @odyssee.command
 def sauvegarde(message):
     cmnd.save()
@@ -376,7 +380,7 @@ def aide(message):
         "Effectuer un lancer de dé": (["dé", "[< nombre_de_faces > [", "< nombre_de_dés >]]"], "Par défaut, un dé à 20 faces est lancé."),
         "Effectuer un lancer dans une capacité": (["capacité", "< nom_de_la_capacité >"], ""),
         "Changer de lieu": (["lieu", "< nom_du_nouveau_lieu >"], "Pensez à bien préciser l'article. (i.e. : '__la__ plage' et non pas 'plage')"),
-        "Acheter un objet": (["achat", "< nom_de_l'objet >"], "Faites attention à bien orthographier le nom de l'article sans oublier le déterminant."),
+        "Acheter un objet": (["achat", "< nom_de_l'objet >"], ""),
         "Ramasser un objet": (["prend", "< nom_de_l'objet >"], ""),
         "Donner un objet à un joueur": (["donne", "< nom_du_joueur >", "< nom_de_l'objet > [", "< montant >]"], f"Vous devez être dans le même lieu.\nVous pouvez donner de l'argent à un autre joueur, le nom de l'objet devient 'Argent' et vous devez préciser un troisième paramètre `montant`. La syntaxe devient donc : `{PREFIX}donne < nom_du_joueur > {SEP} Argent {SEP} < montant >`."),
         "Jetter un objet": (["jette", "< nom_de_l'objet >"], ""),
