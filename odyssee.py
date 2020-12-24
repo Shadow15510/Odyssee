@@ -1,7 +1,7 @@
 # --------------------------------------------------
-# Odyssée (Version 3.0)
+# Odyssée (Version 3.1)
 # by Sha-chan~
-# last version released on the December 24 2020
+# last version released on the December 25 2020
 #
 # code provided with licence :
 # GNU General Public Licence v3.0
@@ -202,7 +202,7 @@ def article(message):
 
         value = "\n".join([f"`{name}.: {info[1][0][index]}`" for index, name in enumerate(("Courage .", "Force ...", "Habileté ", "Rapidité ", "Défense .", "Vie .....", "Mana ...."))])
         answer.add_field(name="Caractéristiques", value=value, inline=True)
-        answer.add_field(name="Divers", value=f"`Prix ..: {abs(info[1][0][7])} Drachmes`\n`Usage .: {('à stocker', 'à consommer', 'consommation immédiate')[info[1][1]]}`", inline=True)
+        answer.add_field(name="Divers", value=f"`Prix ..: {abs(info[1][0][7])} Drachmes`\n`Usage .: {('à porter', 'à utiliser', 'utilisation immédiate', 'arme de mêlée', 'arme à distance')[info[1][1]]}`", inline=True)
         message.channel.send(embed = answer.to_json())
         return None
 
@@ -418,17 +418,25 @@ def formatage(message):
 
 @odyssee.command
 @check_admin
+@check_server_id
+def verrouiller(message):
+    print(f"Odyssée verrouillé sur {message.guild.name}")
+    cmnd.save()
+
+@odyssee.command
+@check_admin
 def administration(message):
     command_help = {
         "Sauvegarder la partie et obtenir une copie locale": (["sauvegarde"], ""),
         "Charger une partie externe": (["charger"], ""),
-        "Modifier les statistiques d'un joueur": (["modifier", "< nom_joueur >", "< nom_capacité >", "< valeur >"], "__Capacité disponibles :__ Courage, Force, Habileté, Rapidité, Défense, Vie, Mana, Argent, Lieu, objet+, objet-, nom, espèce, toutes"),
+        "Modifier les statistiques d'un joueur": (["modifier", "< nom_joueur >", "< nom_capacité >", "< valeur > [", "< nombre >]"], "__Capacité disponibles :__ Courage, Force, Habileté, Rapidité, Défense, Vie, Mana, Argent, Lieu, objet+, objet-, nom, espèce, toutes"),
         "Créer un nouveau joueur": (["ajout_joueur", "< nom >", "< espèce >"], ""),
         "Kicker un joueur": (["kick", "< pseudo_joueur >"], ""),
         "Autoriser un joueur kické à refaire un joueur": (["unkick", "< id_joueur >"], ""),
         "Remettre à zéro les kicks": (["formatage_kick"], ""),
         "Remettre à zéro les joueurs": (["formatage_joueur"], ""),
         "Tout remettre à zéro": (["formatage"], ""),
+        "Vérrouiller Odyssée sur un serveur": (["verrouiller"], "")
     }
 
     help_display(message, command_help)
@@ -443,16 +451,16 @@ def aide(message):
         "Changer sa couleur": (["couleur", "< nom_de_la_couleur >"], f"Vous pouvez également entrer le code hexadécimal en utilisant `{config['PREFIX']}couleur 0xRRVVBB`."),
         "Connaître les espèces enregistrées et changer son espèce": (["espèce", "[< nouvelle_espèce >]"], f"Pour voir la liste entrez seulement `{config['PREFIX']}espèce`."),
         "Avoir la liste des joueurs": (["liste"], ""),
-        "Démarrer ou poursuivre un combat": (["combat", "< nom_de_l'adversaire >"], "Lors d'un combat, vous devez impérativement être sur le même lieu que votre adversaire."),
+        "Démarrer ou poursuivre un combat": (["combat", "< nom_de_l'adversaire > [", "< nom_de_l'arme >]"], "Lors d'un combat, vous devez impérativement être sur le même lieu que votre adversaire. Sauf si vous avez une arme à distance. Si vous ne précisez pas d'armes, vous vous battez à main nues."),
         "Connaitre les articles disponible, consulter les statistiques d'un article": (["article", "[< nom_de_l'article >]"], "Ne pas spécifier de nom d'article renvoie la liste de tous les articles disponibles. Vous ne pouvez consulter les articles que si vous êtes dans un magasin."),
         "Avoir la description de ses pouvoirs et les utiliser": (["pouvoir", "[< nom_du_pouvoir > [", "< nom_de_l'ennemi >]]"], f"Pour avoir la liste de vos pouvoirs entrez seulement `{config['PREFIX']}pouvoir`. Si vous voulez utiliser un de vos pouvoirs il faut spécifier le nom du pouvoir.\nCertains pouvoir nécessite d'avoir un adversaire : pensez à préciser son nom."),
         "Effectuer un lancer de dé": (["dé", "[< nombre_de_faces > [", "< nombre_de_dés >]]"], "Par défaut, un dé à 20 faces est lancé."),
         "Effectuer un lancer dans une capacité": (["capacité", "< nom_de_la_capacité >"], ""),
         "Changer de lieu": (["lieu", "< nom_du_nouveau_lieu >"], "Pensez à bien préciser l'article. (i.e. : '__la__ plage' et non pas 'plage')"),
         "Acheter un objet": (["achat", "< nom_de_l'objet > [", "< nombre > ]"], "Vous ne pouvez acheter plusieurs articles que si l'article désiré est à consommer."),
-        "Ramasser un objet": (["prend", "< nom_de_l'objet >"], ""),
-        "Donner un objet à un joueur": (["donne", "< nom_du_joueur >", "< nom_de_l'objet > [", "< montant >]"], f"Vous devez être dans le même lieu.\nVous pouvez donner de l'argent à un autre joueur, le nom de l'objet devient 'Argent' et vous devez préciser un troisième paramètre `montant`. La syntaxe devient donc : `{config['PREFIX']}donne < nom_du_joueur > {config['SEP']} Argent {config['SEP']} < montant >`."),
-        "Jetter un objet": (["jette", "< nom_de_l'objet >"], ""),
+        "Ramasser un objet": (["prend", "< nom_de_l'objet > [", "< nombre >]"], ""),
+        "Donner un objet à un joueur": (["donne", "< nom_du_joueur >", "< nom_de_l'objet > [", "< nombre >]"], f"Vous devez être dans le même lieu.\nVous pouvez donner de l'argent à un autre joueur, le nom de l'objet devient 'Argent' et vous devez préciser un troisième paramètre `montant`. La syntaxe devient donc : `{config['PREFIX']}donne < nom_du_joueur > {config['SEP']} Argent {config['SEP']} < montant >`."),
+        "Jetter un objet": (["jette", "< nom_de_l'objet > [", "< nombre >]"], ""),
         "utiliser un objet": (["utilise", "< nom_de_l'objet > [", "< nombre >]"], "Permet de manger de la nourriture achetée ou d'utiliser du poison. Préciser un nombre consommera autant d'unité que précisée de l'objet visé."),
         "Sauvegarder, ou supprimer, une note": (["note", "< contenu_ou_numero >", "< + | - >"], f"Pour ajouter une note utilisez la syntaxe : `{config['PREFIX']}note < contenu > {config['SEP']} +`. Pour supprimer une note entrez : `{config['PREFIX']}note < numéro > {config['SEP']} -`.\nVos notes sont visibles sur vos statistiques."),
         "Avoir sa vitesse de déplacement": (["vitesse", "< moyen_de_transport >", "< météo > [", "< type_de_terrain >]"], "Si vous êtes sur l'eau, ne précisez pas le type de terrain.\n\n__Moyen de transport reconnus :__ " + ", ".join(list(data_travel_mean().keys())) + "\n\n__Conditions météorologique connues :__ " + ", ".join(list(data_travel_weather().keys())) + "\n\n__Terrains connus :__ " + ", ".join(list(data_travel_land().keys()))),

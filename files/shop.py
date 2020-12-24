@@ -1,7 +1,9 @@
 # ----- Code numérique pour le stockage des objets
-# 0 : peut-être stocké
+# 0 : à porter
 # 1 : peut-être consommé plus tard
 # 2 : doit être consommé au moment de l'achat
+# 3 : arme de mêlée
+# 4 : arme à distance
 # -----
 
 def data_shop_name():
@@ -37,20 +39,22 @@ def data_shop():
 
     "forge":
         {
-            "épée": ({"Courage":0, "Force":0, "Habileté":-5, "Rapidité":10, "Défense":5, "Vie":0, "Mana":0, "Argent":-20}, 0),
-            "arc": ({"Courage":25, "Force":0, "Habileté":15, "Rapidité":15, "Défense":0, "Vie":0, "Mana":0, "Argent":-70}, 0),
-            "hache": ({"Courage":10, "Force":10, "Habileté":15, "Rapidité":20, "Défense":0, "Vie":0, "Mana":0, "Argent":-50}, 0),
-            "arbalète": ({"Courage":5, "Force":0, "Habileté":15, "Rapidité":25, "Défense":0, "Vie":0, "Mana":0, "Argent":-40}, 0),
+            "épée": ({"Courage":0, "Force":0, "Habileté":-5, "Rapidité":10, "Défense":5, "Vie":0, "Mana":0, "Argent":-20}, 3),
+            "arc": ({"Courage":25, "Force":0, "Habileté":15, "Rapidité":15, "Défense":0, "Vie":0, "Mana":0, "Argent":-70}, 4),
+            "hache": ({"Courage":10, "Force":10, "Habileté":15, "Rapidité":20, "Défense":0, "Vie":0, "Mana":0, "Argent":-50}, 3),
+            "arbalète": ({"Courage":5, "Force":0, "Habileté":15, "Rapidité":25, "Défense":0, "Vie":0, "Mana":0, "Argent":-40}, 4),
             "côte de maille": ({"Courage":5, "Force":0, "Habileté":-5, "Rapidité":-5, "Défense":15, "Vie":0, "Mana":0, "Argent":-20}, 0),
             "armure": ({"Courage":15, "Force":0, "Habileté":-10, "Rapidité":-10, "Défense":100, "Vie":0, "Mana":0, "Argent":-100}, 0),
             "bouclier": ({"Courage":10, "Force":0, "Habileté":-10, "Rapidité":-5, "Défense":25, "Vie":0, "Mana":0, "Argent":-30}, 0),
             "armure souple": ({"Courage":10, "Force":0, "Habileté":-5, "Rapidité":-10, "Défense":25, "Vie":0, "Mana":0, "Argent":-25}, 0),
-            "dague": ({"Courage":-5, "Force":-5, "Habileté":10, "Rapidité":10, "Défense":0, "Vie":0, "Mana":0, "Argent":-15}, 0),
-            "katana": ({"Courage":10, "Force":15, "Habileté":5, "Rapidité":5, "Défense":5, "Vie":0, "Mana":0, "Argent":-30}, 0),
-            "épée batarde": ({"Courage":10, "Force":15, "Habileté":5, "Rapidité":-10, "Défense":10, "Vie":0, "Mana":0, "Argent":-30}, 0),
-            "grand arc": ({"Courage":20, "Force":0, "Habileté":15, "Rapidité":10, "Défense":0, "Vie":0, "Mana":0, "Argent":-40}, 0),
-            "arc long": ({"Courage":10, "Force":20, "Habileté":10, "Rapidité":5, "Défense":0, "Vie":0, "Mana":0, "Argent":-50}, 0),
-            "hallebarde": ({"Courage":5, "Force":10, "Habileté":-5, "Rapidité":-5, "Défense":0, "Vie":0, "Mana":0, "Argent":-20}, 0),
+            "dague": ({"Courage":-5, "Force":-5, "Habileté":10, "Rapidité":10, "Défense":0, "Vie":0, "Mana":0, "Argent":-15}, 3),
+            "katana": ({"Courage":10, "Force":15, "Habileté":5, "Rapidité":5, "Défense":5, "Vie":0, "Mana":0, "Argent":-30}, 3),
+            "épée batarde": ({"Courage":10, "Force":15, "Habileté":5, "Rapidité":-10, "Défense":10, "Vie":0, "Mana":0, "Argent":-30}, 3),
+            "grand arc": ({"Courage":20, "Force":0, "Habileté":15, "Rapidité":10, "Défense":0, "Vie":0, "Mana":0, "Argent":-40}, 4),
+            "arc long": ({"Courage":10, "Force":20, "Habileté":10, "Rapidité":5, "Défense":0, "Vie":0, "Mana":0, "Argent":-50}, 4),
+            "hallebarde": ({"Courage":5, "Force":10, "Habileté":-5, "Rapidité":-5, "Défense":0, "Vie":0, "Mana":0, "Argent":-20}, 3),
+            "flèche": ({"Courage":0, "Force":0, "Habileté":0, "Rapidité":0, "Défense":0, "Vie":0, "Mana":0, "Argent":-2}, 1),
+            "carreau": ({"Courage":0, "Force":0, "Habileté":0, "Rapidité":0, "Défense":0, "Vie":0, "Mana":0, "Argent":-2}, 1),
         },
 
     "officine":

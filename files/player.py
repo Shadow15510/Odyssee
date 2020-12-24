@@ -18,7 +18,7 @@ def stat_gen(level=1, color=None, enemy=False):
     stat.append(0)
     
     if enemy:
-        stat += [randint(25, 50 * level), 0, randint(1, 10 * level), color]
+        stat += [randint(25, 50 * level), 0, randint(2, 10 * level), color]
     else:
         stat += [100, 5, 15, color]
     return stat
@@ -113,14 +113,14 @@ class Player:
         return []
 
     def have(self, object_name):
-        name, _, _ = object_stat(object_name)
+        name, _, ref_check = object_stat(object_name)
         if name: object_name = name
 
         for index, item in enumerate(self.inventory):
             name, stat, stockable = object_stat(item[0])
             if (stockable == -1 and item[0] == object_name) or name == object_name: 
                 return index, stat, stockable
-        return -1, -1, -1
+        return -1, -1, ref_check
 
     # --- Modify player --- #
 
@@ -141,7 +141,7 @@ class Player:
             return True
         else:
             if stockable != 2: self.inventory.append([object_name, -1])
-            self.stat_add(stat)
+            if stockable == 0: self.stat_add(stat)
 
 
     def object_del(self, object_name):
@@ -151,7 +151,7 @@ class Player:
             if self.inventory[index][1] <= 0: self.inventory.pop(index)
         else:
             self.inventory.pop(index)
-            self.stat_sub(stat)
+            if stockable == 0: self.stat_sub(stat)
 
     def object_use(self, object_name):
         index = self.have(object_name)[0]
