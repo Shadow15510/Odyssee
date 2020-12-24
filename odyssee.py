@@ -1,7 +1,7 @@
 # --------------------------------------------------
-# Odyssée (Version 2.9)
+# Odyssée (Version 3.0)
 # by Sha-chan~
-# last version released on the 23 of December 2020
+# last version released on the December 24 2020
 #
 # code provided with licence :
 # GNU General Public Licence v3.0
@@ -133,7 +133,7 @@ def liste(message):
         answer.description = "Liste des joueurs enregistrés"
         answer.color = color
         for i in info:
-            answer.add_field(name=i[0], value=f"{i[1]} de niveau {i[3]}, vers {i[2]}", inline=False)
+            answer.add_field(name=i[0], value=f"{i[1]} de niveau {i[3]}, vers {i[2]}{('', ' (PnJ)')[i[4] <= 0]}", inline=False)
 
         message.channel.send(embed = answer.to_json())
         return None
@@ -307,6 +307,51 @@ def utilise(message):
     message.channel.send(cmnd.object_throw(message, True))
     cmnd.save()
 
+@odyssee.command
+@check_server_id
+def vitesse(message):
+    per_hour, per_day, _, sea, success = cmnd.speed_travel(message)
+    if success:
+        answer = Embed()
+        answer.title = "Vitesse"
+        answer.color = 8421504
+
+        if sea:
+            answer.description = "Détail des vitesses, en kilomètres"
+
+            answer.add_field(name="Sur la mer", value=f"`Par heure .: {per_hour[0]}`\n`Par jour ..: {per_day[0]}`", inline=False)
+        else:
+            answer.description = "Détail des vitesses par type de route, en kilomètres"
+
+            answer.add_field(name="Sur une route", value=f"`Par heure .: {per_hour[0]}`\n`Par jour ..: {per_day[0]}`", inline=False)
+            answer.add_field(name="Sur un chemin", value=f"`Par heure .: {per_hour[1]}`\n`Par jour ..: {per_day[1]}`", inline=False)
+            answer.add_field(name="Hors chemin", value=f"`Par heure .: {per_hour[2]}`\n`Par jour ..: {per_day[2]}`", inline=False)
+        message.channel.send(embed=answer.to_json())
+    else:
+        message.channel.send(per_hour)
+
+
+@odyssee.command
+@check_server_id
+def temps(message):
+    time_hour, time_day, distance, sea, success = cmnd.time_travel(message)
+    if success:
+        answer = Embed()
+        answer.title = "Temps"
+        answer.color = 8421504
+        answer.description = f"Temps nécessaire pour parcourir {distance} kilomètre{('', 's')[distance > 1]}"
+
+        if sea:
+            answer.add_field(name="Sur la mer", value=f"`jour(s) ..: {time_day[0]}`\n`heure(s) .: {time_hour[0]}`", inline=False)
+        else:
+            answer.add_field(name="Sur une route", value=f"`jour(s) ..: {time_day[0]}`\n`heure(s) .: {time_hour[0]}`", inline=False)
+            answer.add_field(name="Sur un chemin", value=f"`jour(s) ..: {time_day[1]}`\n`heure(s) .: {time_hour[1]}`", inline=False)
+            answer.add_field(name="Hors chemin", value=f"`jour(s) ..: {time_day[2]}`\n`heure(s) .: {time_hour[2]}`", inline=False)
+        message.channel.send(embed=answer.to_json())
+    
+    else:
+        message.channel.send(time_hour)
+
 
 # --- Administration --- #
 
@@ -329,6 +374,12 @@ def modifier(message):
     message.channel.send(cmnd.player_modify(message))
     cmnd.save()
 
+
+@odyssee.command
+@check_admin
+def ajout_joueur(message):
+    message.channel.send(cmnd.player_create(message))
+    cmnd.save()
 
 @odyssee.command
 @check_admin
@@ -371,7 +422,8 @@ def administration(message):
     command_help = {
         "Sauvegarder la partie et obtenir une copie locale": (["sauvegarde"], ""),
         "Charger une partie externe": (["charger"], ""),
-        "Modifier les statistiques d'un joueur": (["modifier", "< nom_joueur >", "< nom_capacité >", "< valeur >"], "Capacité disponibles :\nCourage, Force, Habileté, Rapidité, Défense, Vie, Mana, Argent, Lieu, objet+, objet-, nom, toutes"),
+        "Modifier les statistiques d'un joueur": (["modifier", "< nom_joueur >", "< nom_capacité >", "< valeur >"], "__Capacité disponibles :__ Courage, Force, Habileté, Rapidité, Défense, Vie, Mana, Argent, Lieu, objet+, objet-, nom, espèce, toutes"),
+        "Créer un nouveau joueur": (["ajout_joueur", "< nom >", "< espèce >"], ""),
         "Kicker un joueur": (["kick", "< pseudo_joueur >"], ""),
         "Autoriser un joueur kické à refaire un joueur": (["unkick", "< id_joueur >"], ""),
         "Remettre à zéro les kicks": (["formatage_kick"], ""),
@@ -403,6 +455,8 @@ def aide(message):
         "Jetter un objet": (["jette", "< nom_de_l'objet >"], ""),
         "utiliser un objet": (["utilise", "< nom_de_l'objet > [", "< nombre >]"], "Permet de manger de la nourriture achetée ou d'utiliser du poison. Préciser un nombre consommera autant d'unité que précisée de l'objet visé."),
         "Sauvegarder, ou supprimer, une note": (["note", "< contenu_ou_numero >", "< + | - >"], f"Pour ajouter une note utilisez la syntaxe : `{config['PREFIX']}note < contenu > {config['SEP']} +`. Pour supprimer une note entrez : `{config['PREFIX']}note < numéro > {config['SEP']} -`.\nVos notes sont visibles sur vos statistiques."),
+        "Avoir sa vitesse de déplacement": (["vitesse", "< moyen_de_transport >", "< météo > [", "< type_de_terrain >]"], "Si vous êtes sur l'eau, ne précisez pas le type de terrain.\n\n__Moyen de transport reconnus :__ " + ", ".join(list(data_travel_mean().keys())) + "\n\n__Conditions météorologique connues :__ " + ", ".join(list(data_travel_weather().keys())) + "\n\n__Terrains connus :__ " + ", ".join(list(data_travel_land().keys()))),
+        "Connaître le temps nécessaire pour franchir une distance": (["temps", "< distance >", "< moyen_de_transport >", "< météo > [", "< type_de_terrain >]"], "Si vous êtes sur l'eau, ne précisez pas le type de terrain.\n\n__Moyen de transport reconnus :__ " + ", ".join(list(data_travel_mean().keys())) + "\n\n__Conditions météorologique connues :__ " + ", ".join(list(data_travel_weather().keys())) + "\n\n__Terrains connus :__ " + ", ".join(list(data_travel_land().keys())))
     }
 
     help_display(message, command_help)

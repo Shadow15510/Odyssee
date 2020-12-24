@@ -18,7 +18,7 @@ def stat_gen(level=1, color=None, enemy=False):
     stat.append(0)
     
     if enemy:
-        stat += [randint(25, 50 * level), 0, randint(10 * level, 50 * level), color]
+        stat += [randint(25, 50 * level), 0, randint(1, 10 * level), color]
     else:
         stat += [100, 5, 15, color]
     return stat
@@ -45,6 +45,7 @@ def object_stat(object_name, shop_name=None):
         return "", [0 for i in range(8)], -1
 
     database = data_shop()
+    object_name = object_name.lower()
     if shop_name:
         return search(database[shop_name], object_name)
     else:
@@ -198,6 +199,79 @@ def data_color():
         "orange":0xffa500,
         "violet":0xff00ff,
         "rose":0xff69b4}
+
+
+# --- Travel --- #
+def data_travel_mean():
+    return {
+        # terre
+        "marche lente": (2.5, 10, 0),
+        "marche rapide": (5, 7, 0),
+        "charrette": (4.8, 8, 0),
+        "cheval": (8, 8, 0),
+        "poney": (6.4, 5, 0),
+
+        # mer
+        "barque": (2.4, 5, 1),
+        "voilier": (3.2, 8, 1),
+        "goélette franche": (9.3, 10, 1),
+        "frégate légère": (3.2, 10, 1),
+        "caravelle": (4.8, 12, 1),
+        "galion": (6.4, 12, 1)
+    }
+
+
+def data_travel_land():
+    return {
+        "plaine": (1, 1, 0.75),
+        "colline": (1, 0.75, 0.5),
+        "montagne": (0.75, 0.75, 0.5),
+        "forêt": (1, 1, 0.5),
+        "jungle": (1, 0.75, 0.25),
+        "marécage": (1, 0.75, 0.25),
+        "désert": (1, 0.5, 0.5),
+        "neige": (1, 0.75, 0.75)
+    }
+
+def data_travel_weather():
+    return {
+        "canicule": (0.75, 0.75),
+        "beau temps": (1, 1),
+        "nuageux": (1, 1),
+        "venteux": (0.75, 1.25),
+        "pluie": (0.75, 0.5),
+        "orage": (0.5, 0.25),
+        "grêle": (0.5, 0.25),
+        "brouillard": (0.5, 0.25)
+    }
+
+
+def get_speed(mean, weather, land):
+    data_mean = data_travel_mean()
+    data_land_type = data_travel_land()
+    data_weather = data_travel_weather()
+
+    if mean in data_mean:
+        per_hour, hour_per_day, land_type = data_mean[mean]
+    else:
+        return f"*Erreur : '{mean}' n'est pas un moyen de transport connu.*", 0, 0, 0, False
+
+    if not land or land_type: land = (1, 1, 1)
+    elif land:
+        if land in data_land_type:
+            land = data_land_type[land]
+        else:
+            return f"*Erreur : '{land_type}' n'est pas un terrain connu.*", 0, 0, 0, False
+
+    if weather in data_weather:
+        weather = data_weather[weather][land_type]  
+    else:
+        return f"*Erreur : '{weather}' n'est pas une météo connue.*", 0, 0, 0, False
+
+    per_hour *= weather
+
+    return [per_hour * i for i in land], [per_hour * hour_per_day * i for i in land], hour_per_day, land_type, True
+        
 
 # --------------------------------------------------
 # Conversion tool for the save file

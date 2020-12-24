@@ -120,7 +120,7 @@ class Command:
     def player_list(self, message):
         if get_user(message)[1] not in self.players:
             return f"*Erreur : {get_user(message)[0]} n'existe pas.*", -1
-        return [[self.players[player_id].name, self.players[player_id].species, self.players[player_id].place, self.players[player_id].get_level()] for player_id in self.players], self.players[get_user(message)[1]].stat[8]
+        return [[self.players[player_id].name, self.players[player_id].species, self.players[player_id].place, self.players[player_id].get_level(), player_id] for player_id in self.players], self.players[get_user(message)[1]].stat[8]
 
     def player_new(self, message):
         user = get_user(message)
@@ -499,7 +499,6 @@ class Command:
             user.object_add(object_name)
             return f"__{user.name}__ prend {object_name}."
             
-        
     def object_give(self, message):
         user = self.id_to_object(get_user(message)[1])
         if not user:
@@ -573,6 +572,38 @@ class Command:
         return f"__{user.name}__ {('jette', 'utilise')[use]} {object_name} {('', f'({nb})')[use]}."
 
 
+    def speed_travel(self, message):
+        args = analyse(message, self.SEP)
+        
+        if len(args) == 2:
+            mean, weather = args
+            land_type = False
+        elif len(args) == 3:
+            mean, weather, land_type = args
+        else:
+            return f"*Erreur : syntaxe invalide `{self.PREFIX}vitesse < moyen_de_transport > {self.SEP} < météo > [ {self.SEP} < type_de_terrain >]`.*", 0, 0, 0, False
+
+        return get_speed(mean, weather, land_type)
+
+        
+
+    def time_travel(self, message):
+        args = analyse(message, self.SEP)
+
+        if len(args) == 3:
+            distance, mean, weather = args
+            land_type = False
+        elif len(args) == 4:
+            distance, mean, weather, land_type = args
+        else:
+            return f"*Erreur : syntaxe invalide `{self.PREFIX}temps < distance > {self.SEP} < moyen_de_transport > {self.SEP} < météo > [ {self.SEP} < type_de_terrain >]`.*", 0, 0, 0, False
+
+        per_hour, per_day, hour_per_day, sea, success = get_speed(mean, weather, land_type)
+
+        if not success: return per_hour, 0, 0, 0, False
+
+        return [int((distance // i) % hour_per_day) for i in per_hour], [int(distance // i) for i in per_day], distance, sea, True
+
 # --- Administration --- #
 
     def save(self):
@@ -642,6 +673,11 @@ class Command:
             player.name = new_value
             result = f"Le pseudo de {old_name} est devenu : {new_value}."
 
+        elif capacity_name == "espèce":
+            new_value = new_value.capitalize()
+            player.species = new_value
+            result = f"__{player.name}__ est devenu(e) un(e) {new_value}."
+
         else:
             result = "*Erreur : la capacité saisie ne correspond à aucune capacité connue.*"
 
@@ -650,6 +686,21 @@ class Command:
             self.players.pop(player.id)
         
         return result
+
+    def player_create(self, message):
+        try:
+            name, species = analyse(message, self.SEP)
+        except:
+            return f"*Erreur : syntaxe invalide `{self.PREFIX}ajout_joueur < nom > {self.SEP} < espèce >`*"
+
+        if name in self.players:
+            return f"*Erreur : {name} existe déjà.*"
+        else:
+            new_id = -len(self.players)
+            self.players.update({new_id: Player(new_id, name, species.capitalize())})
+            self.players[new_id].stat[7] = 0
+            self.players[new_id].stat[6] = 0
+            return f"{name}, un(e) {species}, est apparu(e)."
 
     def player_kick(self, message):
         player_name = analyse(message, self.SEP)[0]
