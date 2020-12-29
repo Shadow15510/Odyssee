@@ -122,6 +122,12 @@ class Player:
                 return index, stat, stockable
         return -1, -1, ref_check
 
+    def find_by_type(self, *object_type):
+        for item in self.inventory:
+            _, stat, check = object_stat(item[0])
+            if check in object_type: return item[0], stat
+        return None, None
+
     # --- Modify player --- #
 
     def stat_add(self, stat_to_add): # From Courage to Mana (include Health, but neither money nor color)
@@ -133,7 +139,7 @@ class Player:
     def object_add(self, object_name):
         index = self.have(object_name)[0]
         _, stat, stockable = object_stat(object_name)
-        if stockable == 1:           
+        if stockable in (1, 5):           
             if index + 1:
                 self.inventory[index][1] += 1
             else:
@@ -143,10 +149,9 @@ class Player:
             if stockable != 2: self.inventory.append([object_name, -1])
             if stockable == 0: self.stat_add(stat)
 
-
     def object_del(self, object_name):
         index, stat, stockable = self.have(object_name)
-        if stockable == 1:
+        if stockable in (1, 5):
             self.inventory[index][1] -= 1
             if self.inventory[index][1] <= 0: self.inventory.pop(index)
         else:

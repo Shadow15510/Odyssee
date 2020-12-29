@@ -1,7 +1,7 @@
 # --------------------------------------------------
-# Odyssée (Version 3.1)
+# Odyssée (Version 3.2)
 # by Sha-chan~
-# last version released on the December 25 2020
+# last version released on the December 29 2020
 #
 # code provided with licence :
 # GNU General Public Licence v3.0
@@ -202,7 +202,7 @@ def article(message):
 
         value = "\n".join([f"`{name}.: {info[1][0][index]}`" for index, name in enumerate(("Courage .", "Force ...", "Habileté ", "Rapidité ", "Défense .", "Vie .....", "Mana ...."))])
         answer.add_field(name="Caractéristiques", value=value, inline=True)
-        answer.add_field(name="Divers", value=f"`Prix ..: {abs(info[1][0][7])} Drachmes`\n`Usage .: {('à porter', 'à utiliser', 'utilisation immédiate', 'arme de mêlée', 'arme à distance')[info[1][1]]}`", inline=True)
+        answer.add_field(name="Divers", value=f"`Prix ..: {abs(info[1][0][7])} Drachmes`\n`Usage .: {('à porter', 'à utiliser', 'utilisation immédiate', 'arme de mêlée', 'arme à distance', 'projectile')[info[1][1]]}`", inline=True)
         message.channel.send(embed = answer.to_json())
         return None
 
@@ -436,7 +436,7 @@ def administration(message):
         "Remettre à zéro les kicks": (["formatage_kick"], ""),
         "Remettre à zéro les joueurs": (["formatage_joueur"], ""),
         "Tout remettre à zéro": (["formatage"], ""),
-        "Vérrouiller Odyssée sur un serveur": (["verrouiller"], "")
+        "Verrouiller Odyssée sur un serveur": (["verrouiller"], "")
     }
 
     help_display(message, command_help)

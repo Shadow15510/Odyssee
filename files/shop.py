@@ -4,6 +4,7 @@
 # 2 : doit être consommé au moment de l'achat
 # 3 : arme de mêlée
 # 4 : arme à distance
+# 5 : projectiles
 # -----
 
 def data_shop_name():
@@ -53,8 +54,8 @@ def data_shop():
             "grand arc": ({"Courage":20, "Force":0, "Habileté":15, "Rapidité":10, "Défense":0, "Vie":0, "Mana":0, "Argent":-40}, 4),
             "arc long": ({"Courage":10, "Force":20, "Habileté":10, "Rapidité":5, "Défense":0, "Vie":0, "Mana":0, "Argent":-50}, 4),
             "hallebarde": ({"Courage":5, "Force":10, "Habileté":-5, "Rapidité":-5, "Défense":0, "Vie":0, "Mana":0, "Argent":-20}, 3),
-            "flèche": ({"Courage":0, "Force":0, "Habileté":0, "Rapidité":0, "Défense":0, "Vie":0, "Mana":0, "Argent":-2}, 1),
-            "carreau": ({"Courage":0, "Force":0, "Habileté":0, "Rapidité":0, "Défense":0, "Vie":0, "Mana":0, "Argent":-2}, 1),
+            "flèche": ({"Courage":0, "Force":0, "Habileté":0, "Rapidité":0, "Défense":0, "Vie":0, "Mana":0, "Argent":-2}, 5),
+            "carreau": ({"Courage":0, "Force":0, "Habileté":0, "Rapidité":0, "Défense":0, "Vie":0, "Mana":0, "Argent":-2}, 5),
         },
 
     "officine":

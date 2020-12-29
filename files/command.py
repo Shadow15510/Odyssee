@@ -265,27 +265,19 @@ class Command:
             return result, False
         
         def enemy_weapon(enemy, wpn_type):
-            enemy_wpn = []
-            for item in enemy.inventory:
-                _, stat, check = object_stat(item[0]) 
-                if check == wpn_type:
-                    enemy_wpn = [item[0], stat]
-                    break
+            enemy_wpn = enemy.find_by_type(wpn_type)
 
-            if enemy_wpn:
+            if enemy_wpn[0]:
                 if wpn_type == 4:
-                    enemy_arrow = [enemy.have("flèche"), enemy.have("carreau")]
-
-                    if enemy_arrow == [(-1, -1, -1), (-1, -1, -1)]:
+                    enemy_bullet = enemy.find_by_type(5)[0]
+                    if not enemy_bullet:
                         return enemy_wpn[0], [0 for _ in range(8)], "", False
                     else:
-                        if enemy_arrow[0][0] != -1: enemy_arrow = "flèche"
-                        else: enemy_arrow = "carreau"
-                        return enemy_wpn[0], enemy_wpn[1], enemy_arrow, True
+                        return enemy_wpn[0], enemy_wpn[1], enemy_bullet, True
                 else:
                     return enemy_wpn[0], enemy_wpn[1], "", True
             else:
-                return "mains nues", [0 for _ in range(8)], "", False
+                return "mains nues", [0 for _ in range(8)], "", wpn_type == 3
 
         def melee_fight(user, enemy):
             if phase_1(user, enemy):
@@ -294,29 +286,41 @@ class Command:
                 fighters = (enemy, user)
                         
             result = f"__{fighters[0].name}__ engage le combat.\n"
-
             fight = turn(fighters[0], fighters[1])
             result += fight[0]
                 
             if fight[1]: return result, True
 
             result +=f"__{fighters[1].name}__ riposte…\n"
-                
             fight = turn(fighters[1], fighters[0])
             result += fight[0]
 
             return result, fight[1]
 
-        def ranged_fight(user, enemy, arrow_name, ripost):
-            fighters = (user, enemy)
-            result = f"__{user.name}__ vise {enemy.name}…\n"
-            fight = turn(user, enemy)
-            result += fight[0]
+        def ranged_fight(user, enemy, bullet, ripost):
+            if ripost:
+                if phase_1(user, enemy):
+                    fighters = (user, enemy)
+                else:
+                    fighters = (enemy, user)
+                    bullet = bullet[1], bullet[0]
 
-            if ripost and not fight[1]:
-                enemy.object_use(arrow_name)
-                result += f"\n__{enemy.name}__ se retourne et ajuste un tir.\n"
-                fight = turn(enemy, user)
+                result = f"__{fighters[0].name}__ vise {fighters[1].name}…\n"
+                fighters[0].object_use(bullet[0])
+                fight = turn(fighters[0], fighters[1])
+                result += fight[0]
+
+                if fight[1]: return result, True
+
+                result += f"\n__{fighters[1].name}__ ajuste un tir.\n"
+                fighters[1].object_use(bullet[1])
+                fight = turn(fighters[1], fighters[0])
+                result += fight[0]
+
+            else:
+                result = f"__{user.name}__ vise __{enemy.name}__\n"
+                user.object_use(bullet[0])
+                fight = turn(user, enemy)
                 result += fight[0]
 
             return result, fight[1]
@@ -326,20 +330,12 @@ class Command:
         if weapon_name: user_weapon = user.have(weapon_name)
         else: weapon_name, user_weapon = "mains nues", (-1, [0 for _ in range(8)], -1)
 
-        user_arrow = [user.have("flèche"), user.have("carreau")]
+        user_arrow = user.find_by_type(5)[0]
 
         if user_weapon == (-1, -1, -1):
             return f"*Erreur : {user.name} n'a pas cette arme : '{weapon_name}'*"
-        elif user_weapon[2] == 4:
-            if user_arrow == [(-1, -1, -1), (-1, -1, -1)]:
-                return f"*Erreur : {user.name} n'a rien pour tirer sur {enemy_name}.*"
-            else:
-                if user_arrow[0][0] != -1: user_arrow = "flèche"
-                else: user_arrow = "carreau"
-                user.object_use(user_arrow)
-
-        if not enemy:
-            return f"*Erreur : {enemy_name} n'existe pas.*"
+        elif user_weapon[2] == 4 and not user_arrow:
+            return f"*Erreur : {user.name} n'a rien pour tirer sur {enemy_name}.*"
 
         if user_weapon[2] != 4 and user.place != enemy.place:
             return f"*Erreur : {user.name} et {enemy.name} ne sont pas au même endroit.*"
@@ -347,7 +343,8 @@ class Command:
         enemy_weapon_name, enemy_weapon_stat, enemy_arrow, ripost = enemy_weapon(enemy, (3, 4)[user_weapon[2] == 4])
         
         result = f"__{user.name}__ se bat avec l'arme : '{weapon_name}'.\n"
-        result += f"__{enemy.name}__ se bat avec l'arme : '{enemy_weapon_name}'.\n"
+        if ripost: result += f"__{enemy.name}__ se bat avec l'arme : '{enemy_weapon_name}'.\n"
+        else: result += f"__{enemy.name}__ ne peut pas riposter.\n"
 
         user.stat_add(user_weapon[1])
         enemy.stat_add(enemy_weapon_stat)
@@ -514,14 +511,14 @@ class Command:
             return f"*Erreur : {get_user(message)[0]} n'est pas un joueur enregistré.*", -1, 2
 
         shop_name = user.inshop()
+        item_name = analyse(message, self.SEP)
+
         if not shop_name:
             return f"*Erreur : {user.name} n'est pas dans un magasin.*", -1, 2
-
-        item_name = analyse(message, self.SEP)
         
         if item_name:
             item_name = item_name[0]
-            _, stat, check = object_stat(item_name)
+            _, stat, check = object_stat(item_name, shop_name)
             if check != -1:
                 return (item_name, (stat, check)), user.stat[8], 1
             else:
@@ -556,7 +553,7 @@ class Command:
         elif user.stat[7] < nb * abs(stat[7]):
             return f"*Erreur : {user.name} n'a pas assez de Drachmes.*"
         else:
-            if check == 1:
+            if check in (1, 5):
                 for _ in range(nb): user.object_add(item_name)
             else:
                 if nb > 1: return f"*Erreur : {user.name} ne peut pas acheter plusieurs fois cet objet : '{item_name}'.*"
@@ -585,12 +582,12 @@ class Command:
         index, _, stockable = user.have(object_name)
         if nb <= 0: nb = 1
 
-        if index != -1 and stockable != 1:
+        if index != -1 and stockable not in (1, 5):
             return f"*Erreur : {user.name} a déjà cet objet.*"
         else:
-            if stockable != 1: nb = 1
+            if stockable not in (1, 5): nb = 1
             for _ in range(nb): user.object_add(object_name)
-            return f"__{user.name}__ prend {object_name}{('', f' ({nb})')[stockable == 1]}."
+            return f"__{user.name}__ prend {object_name}{('', f' ({nb})')[stockable in (1, 5)]}."
             
     def object_give(self, message):
         user = self.id_to_object(get_user(message)[1])
@@ -628,9 +625,9 @@ class Command:
             index, _, check = user.have(object_name)
             if index == -1:
                 return f"*Erreur : {user.name} ne possède pas cet objet : '{object_name}'.*"
-            elif check == 1 and amount > user.inventory[index][1]:
+            elif check in (1, 5) and amount > user.inventory[index][1]:
                 return f"*Erreur : {user.name} ne possède pas en assez grande quantité l'objet : '{object_name}'.*"
-            elif check != 1 and player.have(object_name)[0] != -1:
+            elif check not in (1, 5) and player.have(object_name)[0] != -1:
                 return f"*Erreur : {player.name} a déjà cet objet.*"
             else:
                 if check != 1: amount = 1
@@ -639,7 +636,7 @@ class Command:
                     user.object_del(object_name)
                     player.object_add(object_name)
                 
-            return f"__{user.name}__ donne {object_name}{('', f' ({amount})')[check == 1]} à __{player.name}__."
+            return f"__{user.name}__ donne {object_name}{('', f' ({amount})')[check in (1, 5)]} à __{player.name}__."
 
     def object_throw(self, message, use):
         user = self.id_to_object(get_user(message)[1])
@@ -659,7 +656,7 @@ class Command:
         index, _, check = user.have(object_name)
         object_name = user.inventory[index][0]
 
-        if check != 1: nb = 1
+        if check not in (1, 5): nb = 1
 
 
         if index == -1:
@@ -674,10 +671,10 @@ class Command:
                 for _ in range(nb): user.object_use(object_name)
                     
         else:
-            if check == 1 and nb > user.inventory[index][1]: nb = user.inventory[index][1]
+            if check in (1, 5) and nb > user.inventory[index][1]: nb = user.inventory[index][1]
             for _ in range(nb): user.object_del(object_name) 
 
-        return f"__{user.name}__ {('jette', 'utilise')[use]} {object_name} {('', f'({nb})')[check == 1]}."
+        return f"__{user.name}__ {('jette', 'utilise')[use]} {object_name} {('', f'({nb})')[check in (1, 5)]}."
 
 
     def speed_travel(self, message):
@@ -768,22 +765,22 @@ class Command:
 
         elif capacity_name == "objet+":
             index, _, stockable = player.have(new_value)
-            if stockable != 1: nb = 1
+            if stockable not in (1, 5): nb = 1
 
-            if index == -1 or stockable == 1:
+            if index == -1 or stockable in (1, 5):
                 for _ in range(nb): player.object_add(new_value)
-                result = f"__{player.name}__ reçoit {new_value}{('', f' ({nb})')[stockable == 1]}."
+                result = f"__{player.name}__ reçoit {new_value}{('', f' ({nb})')[stockable in (1, 5)]}."
             else:
                 result = f"__{player.name}__ a déjà cet objet : '{new_value}'."
 
         elif capacity_name == "objet-":
             index, _, stockable = player.have(new_value)
-            if stockable != 1: nb = 1
+            if stockable not in (1, 5): nb = 1
             elif nb > player.inventory[index][1]: nb = player.inventory[index][1]
 
             if index != -1:
                 for _ in range(nb): player.object_del(new_value)
-                result = f"__{player.name}__ a perdu {new_value}{('', f' ({nb})')[stockable == 1]}."
+                result = f"__{player.name}__ a perdu {new_value}{('', f' ({nb})')[stockable in (1, 5)]}."
             else:
                 result = f"__{player.name}__ ne possède pas cet objet : '{new_value}'."  
 
