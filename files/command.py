@@ -650,29 +650,51 @@ class Command:
         elif len(args) == 2:
             object_name, nb = args[0], args[1]
         else:
-            return f"*Erreur : syntaxe invalide `{self.PREFIX}{('jette', 'utilise')[use]} < nom_de_l'objet > [ {self.SEP} < nombre >]`.*"
+            return f"*Erreur : syntaxe invalide `{self.PREFIX}{('jette', 'utilise', 'vend')[use]} < nom_de_l'objet > [ {self.SEP} < nombre >]`.*"
 
         
         index, _, check = user.have(object_name)
-        object_name = user.inventory[index][0]
-
+    
         if check not in (1, 5): nb = 1
-
 
         if index == -1:
             return f"*Erreur : {user.name} ne possède pas cet objet : '{object_name}'.*"
+        elif nb > user.inventory[index][1] and check in (1, 5):
+            return f"*Erreur : {user.name} ne possède pas en assez grande quantité l'objet : '{object_name}'.*"
 
-        elif use:
+        object_name = user.inventory[index][0]
+
+
+        if use == 0:
+            if check in (1, 5) and nb > user.inventory[index][1]: nb = user.inventory[index][1]
+            for _ in range(nb): user.object_del(object_name)
+
+        elif use == 1:
             if check != 1:
                 return f"*Erreur : cet objet ne peut pas être utilisé.*"
-            elif nb > user.inventory[index][1]:
-                return f"*Erreur : {user.name} ne possède pas en assez grande quantité l'objet : '{object_name}'.*"
             else:
                 for _ in range(nb): user.object_use(object_name)
-                    
+               
         else:
-            if check in (1, 5) and nb > user.inventory[index][1]: nb = user.inventory[index][1]
-            for _ in range(nb): user.object_del(object_name) 
+            shop = user.inshop()
+            if not shop:
+                return f"*Erreur : {user.name} n'est pas dans un magasin.*"
+
+            all_item = data_shop()[shop]
+
+            item_name, stat, check = object_stat(object_name)
+            price = int(0.75 * abs(stat[7]))
+
+            if item_name in all_item:
+                for _ in range(nb):
+                    user.stat[7] += price
+                    user.object_del(object_name)
+                return f"__{user.name}__ vend l'objet : '{object_name}{('', f' ({nb})')[nb > 1]}' pour {price * nb} Drachmes."
+            else:
+                return f"*Erreur : {user.name} n'est pas dans le bon magasin, ou cet objet n'est pas vendable.*"
+
+
+            
 
         return f"__{user.name}__ {('jette', 'utilise')[use]} {object_name} {('', f'({nb})')[check in (1, 5)]}."
 
@@ -807,7 +829,7 @@ class Command:
         try:
             name, species = analyse(message, self.SEP)
         except:
-            return f"*Erreur : syntaxe invalide `{self.PREFIX}ajout_joueur < nom > {self.SEP} < espèce >`*"
+            return f"*Erreur : syntaxe invalide `{self.PREFIX}ajout_joueur < nom > {self.SEP} < espèce >`.*"
 
         if name in self.players:
             return f"*Erreur : {name} existe déjà.*"
@@ -817,6 +839,16 @@ class Command:
             self.players[new_id].stat[7] = 0
             self.players[new_id].stat[6] = 0
             return f"{name}, un(e) {species}, est apparu(e)."
+
+    def player_delete(self, message):
+        player_name = analyse(message, self.SEP)
+
+        if not name:
+            return f"*Erreur : syntaxe invalide `{self.PREFIX}suppression_joueur < nom >`.*"
+
+        self.players.pop(self.nick_to_id(player_name))
+        return f"__{player_name}__ a été supprimé."
+
 
     def player_kick(self, message):
         player_name = analyse(message, self.SEP)[0]

@@ -40,7 +40,7 @@ def data_shop():
 
     "forge":
         {
-            "épée": ({"Courage":0, "Force":0, "Habileté":-5, "Rapidité":10, "Défense":5, "Vie":0, "Mana":0, "Argent":-20}, 3),
+            "épée": ({"Courage":5, "Force":0, "Habileté":-5, "Rapidité":10, "Défense":5, "Vie":0, "Mana":0, "Argent":-20}, 3),
             "arc": ({"Courage":25, "Force":0, "Habileté":15, "Rapidité":15, "Défense":0, "Vie":0, "Mana":0, "Argent":-70}, 4),
             "hache": ({"Courage":10, "Force":10, "Habileté":15, "Rapidité":20, "Défense":0, "Vie":0, "Mana":0, "Argent":-50}, 3),
             "arbalète": ({"Courage":5, "Force":0, "Habileté":15, "Rapidité":25, "Défense":0, "Vie":0, "Mana":0, "Argent":-40}, 4),
@@ -82,10 +82,12 @@ def data_shop():
 
     "tannerie":
         {
-            "bottes": ({"Courage":10, "Force":0, "Habileté":0, "Rapidité":0, "Défense":5, "Vie":0, "Mana":0, "Argent":-30}, 0),
-            "cape": ({"Courage":0, "Force":5, "Habileté":0, "Rapidité":0, "Défense":10, "Vie":0, "Mana":0, "Argent":-60}, 0),
+            "bottes": ({"Courage":10, "Force":0, "Habileté":0, "Rapidité":5, "Défense":5, "Vie":0, "Mana":0, "Argent":-30}, 0),
+            "cape": ({"Courage":0, "Force":5, "Habileté":0, "Rapidité":10, "Défense":10, "Vie":0, "Mana":0, "Argent":-60}, 0),
             "bottes enchantées": ({"Courage":10, "Force":0, "Habileté":0, "Rapidité":0, "Défense":5, "Vie":0, "Mana":5, "Argent":-60}, 0),
             "cape enchantée": ({"Courage":0, "Force":5, "Habileté":0, "Rapidité":0, "Défense":10, "Vie":0, "Mana":5, "Argent":-120}, 0),
+            "manteau": ({"Courage":5, "Force":0, "Habileté":10, "Rapidité":10, "Défense":5, "Vie":0, "Mana":0, "Argent":-50}, 0),
+            "gants": ({"Courage":0, "Force":10, "Habileté":5, "Rapidité":0, "Défense":5, "Vie":0, "Mana":0, "Argent":-30}, 0),
         },
 
     "écurie":

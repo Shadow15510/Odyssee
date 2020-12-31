@@ -31,29 +31,43 @@ def roll_die(faces = 20, nb = 1):
 # --- Get the object's statistic --- #
 
 def object_stat(object_name, shop_name=None):
+
     def auto_complete(database, name):
         match = {len(item_name): item_name for item_name in database if item_name in name}
         if match:
-            return match[max(match.keys())]
+            return max(match.keys()), match[max(match.keys())]
 
-    def search(shop, object_name):
-        name = auto_complete(shop, object_name)
-        if name:
-            statistic = shop[name]
+    def search_all(object_name):
+        match = {}
+        database = data_shop()
+
+        for shop in database:
+            rslt = auto_complete(database[shop], object_name)
+            if rslt:
+                match[rslt[0]] = (rslt[1], shop)
+
+        if match:
+            name, shop = match[max(match.keys())]
+            statistic = database[shop][name]
             return name, list(statistic[0].values()), statistic[1]
 
-        return "", [0 for i in range(8)], -1
+        return "", [0 for _ in range(8)], -1
 
-    database = data_shop()
+    def search_shop(object_name, shop_name):
+        database = data_shop()[shop_name]
+
+        _, name = auto_complete(database, object_name)
+        if name:
+            statistic = database[name]
+            return name, list(statistic[0].values()), statistic[1]
+
+        return "", [0 for _ in range(8)], -1
+
     object_name = object_name.lower()
     if shop_name:
-        return search(database[shop_name], object_name)
+        return search_shop(object_name, shop_name)
     else:
-        for shop_name in database:
-            name, stat, check = search(database[shop_name], object_name)
-            if check != -1: return name, stat, check
-        return "", [0 for _ in range(8)], -1
-        
+        return search_all(object_name)
             
 
 # --------------------------------------------------
@@ -159,12 +173,12 @@ class Player:
             if stockable == 0: self.stat_sub(stat)
 
     def object_use(self, object_name):
-        index = self.have(object_name)[0]
+        index, stat, _ = self.have(object_name)
         self.inventory[index][1] -= 1
         if self.inventory[index][1] <= 0:
             self.inventory.pop(index)
 
-        self.stat_add(object_stat(object_name)[1])
+        self.stat_add(stat)
 
     def capacity_modify(self, capacity_index, amount):
         self.stat[capacity_index] += amount

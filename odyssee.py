@@ -1,7 +1,7 @@
 # --------------------------------------------------
-# Odyssée (Version 3.2)
+# Odyssée (Version 3.3)
 # by Sha-chan~
-# last version released on the December 29 2020
+# last version released on the December 31 2020
 #
 # code provided with licence :
 # GNU General Public Licence v3.0
@@ -178,7 +178,7 @@ def article(message):
 
     if not message_type:
         answer = Embed()
-        answer.title = info[0].capitalize()
+        answer.title = info[0]
         answer.description = "Listes des articles disponibles"
         answer.color = color
 
@@ -297,15 +297,22 @@ def donne(message):
 @odyssee.command
 @check_server_id
 def jette(message):
-    message.channel.send(cmnd.object_throw(message, False))
+    message.channel.send(cmnd.object_throw(message, 0))
     cmnd.save()
   
 
 @odyssee.command
 @check_server_id
 def utilise(message):
-    message.channel.send(cmnd.object_throw(message, True))
+    message.channel.send(cmnd.object_throw(message, 1))
     cmnd.save()
+
+@odyssee.command
+@check_server_id
+def vend(message):
+    message.channel.send(cmnd.object_throw(message, 2))
+    cmnd.save()
+
 
 @odyssee.command
 @check_server_id
@@ -381,6 +388,14 @@ def ajout_joueur(message):
     message.channel.send(cmnd.player_create(message))
     cmnd.save()
 
+
+@odyssee.command
+@check_admin
+def suppression_joueur(message):
+    message.channel.send(cmnd.player_delete(message))
+    cmnd.save()
+
+
 @odyssee.command
 @check_admin
 def kick(message):
@@ -423,6 +438,7 @@ def verrouiller(message):
     print(f"Odyssée verrouillé sur {message.guild.name}")
     cmnd.save()
 
+
 @odyssee.command
 @check_admin
 def administration(message):
@@ -431,6 +447,7 @@ def administration(message):
         "Charger une partie externe": (["charger"], ""),
         "Modifier les statistiques d'un joueur": (["modifier", "< nom_joueur >", "< nom_capacité >", "< valeur > [", "< nombre >]"], "__Capacité disponibles :__ Courage, Force, Habileté, Rapidité, Défense, Vie, Mana, Argent, Lieu, objet+, objet-, nom, espèce, toutes"),
         "Créer un nouveau joueur": (["ajout_joueur", "< nom >", "< espèce >"], ""),
+        "Supprimer un joueur": (["suppression_joueur", "< nom >"], ""),
         "Kicker un joueur": (["kick", "< pseudo_joueur >"], ""),
         "Autoriser un joueur kické à refaire un joueur": (["unkick", "< id_joueur >"], ""),
         "Remettre à zéro les kicks": (["formatage_kick"], ""),
@@ -461,7 +478,8 @@ def aide(message):
         "Ramasser un objet": (["prend", "< nom_de_l'objet > [", "< nombre >]"], ""),
         "Donner un objet à un joueur": (["donne", "< nom_du_joueur >", "< nom_de_l'objet > [", "< nombre >]"], f"Vous devez être dans le même lieu.\nVous pouvez donner de l'argent à un autre joueur, le nom de l'objet devient 'Argent' et vous devez préciser un troisième paramètre `montant`. La syntaxe devient donc : `{config['PREFIX']}donne < nom_du_joueur > {config['SEP']} Argent {config['SEP']} < montant >`."),
         "Jetter un objet": (["jette", "< nom_de_l'objet > [", "< nombre >]"], ""),
-        "utiliser un objet": (["utilise", "< nom_de_l'objet > [", "< nombre >]"], "Permet de manger de la nourriture achetée ou d'utiliser du poison. Préciser un nombre consommera autant d'unité que précisée de l'objet visé."),
+        "Utiliser un objet": (["utilise", "< nom_de_l'objet > [", "< nombre >]"], "Permet de manger de la nourriture achetée ou d'utiliser du poison. Préciser un nombre consommera autant d'unité que précisée de l'objet visé."),
+        "Vendre un objet": (["vend", "< nom_de_l'objet > [", "< nombre >]"], "Vous devez être dans un magasin qui vend l'item que vous voulez vendre."),
         "Sauvegarder, ou supprimer, une note": (["note", "< contenu_ou_numero >", "< + | - >"], f"Pour ajouter une note utilisez la syntaxe : `{config['PREFIX']}note < contenu > {config['SEP']} +`. Pour supprimer une note entrez : `{config['PREFIX']}note < numéro > {config['SEP']} -`.\nVos notes sont visibles sur vos statistiques."),
         "Avoir sa vitesse de déplacement": (["vitesse", "< moyen_de_transport >", "< météo > [", "< type_de_terrain >]"], "Si vous êtes sur l'eau, ne précisez pas le type de terrain.\n\n__Moyen de transport reconnus :__ " + ", ".join(list(data_travel_mean().keys())) + "\n\n__Conditions météorologique connues :__ " + ", ".join(list(data_travel_weather().keys())) + "\n\n__Terrains connus :__ " + ", ".join(list(data_travel_land().keys()))),
         "Connaître le temps nécessaire pour franchir une distance": (["temps", "< distance >", "< moyen_de_transport >", "< météo > [", "< type_de_terrain >]"], "Si vous êtes sur l'eau, ne précisez pas le type de terrain.\n\n__Moyen de transport reconnus :__ " + ", ".join(list(data_travel_mean().keys())) + "\n\n__Conditions météorologique connues :__ " + ", ".join(list(data_travel_weather().keys())) + "\n\n__Terrains connus :__ " + ", ".join(list(data_travel_land().keys())))
