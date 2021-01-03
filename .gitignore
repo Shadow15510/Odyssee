@@ -1,4 +1,5 @@
 *.txt
+*.json
 __pycache__/*
 files/__pycache__/*
-"config.json"
+
