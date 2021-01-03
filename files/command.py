@@ -816,6 +816,14 @@ class Command:
             player.species = new_value
             result = f"__{player.name}__ est devenu(e) un(e) {new_value}."
 
+        elif capacity_name == "pouvoir+":
+            power_check = player.power_add(new_value)
+            result = ("*Erreur : '{new_value}' n'est pas un pouvoir connu.*", f"*Erreur : {player.name} connaît déjà le sort '{new_value}'.*", f"__{player.name}__ apprend le sort : '{new_value}'.")[power_check]
+
+        elif capacity_name == "pouvoir-":
+            power_check = player.power_sub(new_value)
+            result = (f"*Erreur : '{new_value}' n'est pas un pouvoir connu.*", f"Erreur : {player.name} ne connaît pas le sort : '{new_value}'", f"__{player.name}__ oublie le sort : '{new_value}'")[power_check]
+
         else:
             result = "*Erreur : la capacité saisie ne correspond à aucune capacité connue.*"
 

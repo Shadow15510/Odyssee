@@ -445,7 +445,7 @@ def administration(message):
     command_help = {
         "Sauvegarder la partie et obtenir une copie locale": (["sauvegarde"], ""),
         "Charger une partie externe": (["charger"], ""),
-        "Modifier les statistiques d'un joueur": (["modifier", "< nom_joueur >", "< nom_capacité >", "< valeur > [", "< nombre >]"], "__Capacité disponibles :__ Courage, Force, Habileté, Rapidité, Défense, Vie, Mana, Argent, Lieu, objet+, objet-, nom, espèce, toutes"),
+        "Modifier les statistiques d'un joueur": (["modifier", "< nom_joueur >", "< nom_capacité >", "< valeur > [", "< nombre >]"], "__Capacité disponibles :__ Courage, Force, Habileté, Rapidité, Défense, Vie, Mana, Argent, Lieu, objet+, objet-, nom, espèce, toutes, pouvoir+, pouvoir-"),
         "Créer un nouveau joueur": (["joueur_plus", "< nom >", "< espèce >"], ""),
         "Supprimer un joueur": (["joueur_moins", "< nom >"], ""),
         "Kicker un joueur": (["kick", "< pseudo_joueur >"], ""),
