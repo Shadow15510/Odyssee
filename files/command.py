@@ -217,7 +217,7 @@ class Command:
             return pt_player > pt_target
 
         def phase_2(player):
-            return player.capacity_roll(2)
+            return player.capacity_roll(2) >= 2
 
         def phase_3(player, target):
             pt_damage = player.stat[1] + roll_die(10, player.get_level())
