@@ -829,11 +829,12 @@ class Command:
         try:
             name, species = analyse(message, self.SEP)
         except:
-            return f"*Erreur : syntaxe invalide `{self.PREFIX}ajout_joueur < nom > {self.SEP} < espèce >`.*"
+            return f"*Erreur : syntaxe invalide `{self.PREFIX}joueur_plus < nom > {self.SEP} < espèce >`.*"
 
         if name in self.players:
             return f"*Erreur : {name} existe déjà.*"
         else:
+            name = name.capitalize()
             new_id = -len(self.players)
             self.players.update({new_id: Player(new_id, name, species.capitalize())})
             self.players[new_id].stat[7] = 0
@@ -843,10 +844,16 @@ class Command:
     def player_delete(self, message):
         player_name = analyse(message, self.SEP)
 
-        if not name:
-            return f"*Erreur : syntaxe invalide `{self.PREFIX}suppression_joueur < nom >`.*"
+        if not player_name:
+            return f"*Erreur : syntaxe invalide `{self.PREFIX}joueur_moins < nom >`.*"
+        
+        player_name = player_name[0]
+        player_id = self.nick_to_id(player_name)
 
-        self.players.pop(self.nick_to_id(player_name))
+        if not player_id:
+            return f"*Erreur : {player_name} n'est pas un joueur enregistré.*"
+        self.players.pop(player_id)
+
         return f"__{player_name}__ a été supprimé."
 
 

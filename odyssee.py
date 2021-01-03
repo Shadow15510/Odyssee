@@ -1,7 +1,7 @@
 # --------------------------------------------------
-# Odyssée (Version 3.3)
+# Odyssée (Version 3.4)
 # by Sha-chan~
-# last version released on the December 31 2020
+# last version released on the January 3 2021
 #
 # code provided with licence :
 # GNU General Public Licence v3.0
@@ -12,7 +12,7 @@ import json
 
 from files.command import *
 
-with open("Odyssée/config.json", "r") as file:
+with open("config.json", "r") as file:
     config = json.load(file)
 
 odyssee = Handler(config["TOKEN"], config["PREFIX"])
@@ -384,14 +384,14 @@ def modifier(message):
 
 @odyssee.command
 @check_admin
-def ajout_joueur(message):
+def joueur_plus(message):
     message.channel.send(cmnd.player_create(message))
     cmnd.save()
 
 
 @odyssee.command
 @check_admin
-def suppression_joueur(message):
+def joueur_moins(message):
     message.channel.send(cmnd.player_delete(message))
     cmnd.save()
 
@@ -446,8 +446,8 @@ def administration(message):
         "Sauvegarder la partie et obtenir une copie locale": (["sauvegarde"], ""),
         "Charger une partie externe": (["charger"], ""),
         "Modifier les statistiques d'un joueur": (["modifier", "< nom_joueur >", "< nom_capacité >", "< valeur > [", "< nombre >]"], "__Capacité disponibles :__ Courage, Force, Habileté, Rapidité, Défense, Vie, Mana, Argent, Lieu, objet+, objet-, nom, espèce, toutes"),
-        "Créer un nouveau joueur": (["ajout_joueur", "< nom >", "< espèce >"], ""),
-        "Supprimer un joueur": (["suppression_joueur", "< nom >"], ""),
+        "Créer un nouveau joueur": (["joueur_plus", "< nom >", "< espèce >"], ""),
+        "Supprimer un joueur": (["joueur_moins", "< nom >"], ""),
         "Kicker un joueur": (["kick", "< pseudo_joueur >"], ""),
         "Autoriser un joueur kické à refaire un joueur": (["unkick", "< id_joueur >"], ""),
         "Remettre à zéro les kicks": (["formatage_kick"], ""),
@@ -488,5 +488,5 @@ def aide(message):
     help_display(message, command_help)
 
 
-odyssee.start()
+odyssee.run()
 
