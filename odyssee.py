@@ -1,5 +1,5 @@
 # --------------------------------------------------
-# Odyssée (Version 3.4)
+# Odyssée (Version 3.4.1)
 # by Sha-chan~
 # last version released on the January 3 2021
 #
@@ -263,7 +263,7 @@ def dé(message):
 
 @odyssee.command
 @check_server_id
-def capacité(message):
+def lancer(message):
     message.channel.send(cmnd.roll_capacity(message))
 
 
@@ -445,7 +445,7 @@ def administration(message):
     command_help = {
         "Sauvegarder la partie et obtenir une copie locale": (["sauvegarde"], ""),
         "Charger une partie externe": (["charger"], ""),
-        "Modifier les statistiques d'un joueur": (["modifier", "< nom_joueur >", "< nom_capacité >", "< valeur > [", "< nombre >]"], "__Capacité disponibles :__ Courage, Force, Habileté, Rapidité, Défense, Vie, Mana, Argent, Lieu, objet+, objet-, nom, espèce, toutes"),
+        "Modifier les statistiques d'un joueur": (["modifier", "< nom_joueur >", "< nom_capacité >", "< valeur > [", "< nombre >]"], "__Capacité disponibles :__ Courage, Force, Habileté, Rapidité, Défense, Vie, Mana, Argent, Lieu, objet+, objet-, nom, espèce, toutes, pouvoir+, pouvoir-"),
         "Créer un nouveau joueur": (["joueur_plus", "< nom >", "< espèce >"], ""),
         "Supprimer un joueur": (["joueur_moins", "< nom >"], ""),
         "Kicker un joueur": (["kick", "< pseudo_joueur >"], ""),
@@ -472,7 +472,7 @@ def aide(message):
         "Connaitre les articles disponible, consulter les statistiques d'un article": (["article", "[< nom_de_l'article >]"], "Ne pas spécifier de nom d'article renvoie la liste de tous les articles disponibles. Vous ne pouvez consulter les articles que si vous êtes dans un magasin."),
         "Avoir la description de ses pouvoirs et les utiliser": (["pouvoir", "[< nom_du_pouvoir > [", "< nom_de_l'ennemi >]]"], f"Pour avoir la liste de vos pouvoirs entrez seulement `{config['PREFIX']}pouvoir`. Si vous voulez utiliser un de vos pouvoirs il faut spécifier le nom du pouvoir.\nCertains pouvoir nécessite d'avoir un adversaire : pensez à préciser son nom."),
         "Effectuer un lancer de dé": (["dé", "[< nombre_de_faces > [", "< nombre_de_dés >]]"], "Par défaut, un dé à 20 faces est lancé."),
-        "Effectuer un lancer dans une capacité": (["capacité", "< nom_de_la_capacité >"], ""),
+        "Effectuer un lancer dans une capacité": (["lancer", "< nom_de_la_capacité >"], ""),
         "Changer de lieu": (["lieu", "< nom_du_nouveau_lieu >"], "Pensez à bien préciser l'article. (i.e. : '__la__ plage' et non pas 'plage')"),
         "Acheter un objet": (["achat", "< nom_de_l'objet > [", "< nombre > ]"], "Vous ne pouvez acheter plusieurs articles que si l'article désiré est à consommer."),
         "Ramasser un objet": (["prend", "< nom_de_l'objet > [", "< nombre >]"], ""),

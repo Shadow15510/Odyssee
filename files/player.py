@@ -69,13 +69,23 @@ def object_stat(object_name, shop_name=None):
     else:
         return search_all(object_name)
             
+# --- get the power --- #
+
+def get_power_by_species(species_name):
+    species_list = data_species()
+    power_by_species = data_power_by_species()
+            
+    for species in power_by_species:
+        if species_name in species_list[species]:
+            return power_by_species[species]
+    return []
 
 # --------------------------------------------------
 # Player object
 # --------------------------------------------------
 
 class Player:
-    def __init__(self, identifier, name, species, stat=None, place="< inconnu >", inventory=None, note=None):
+    def __init__(self, identifier, name, species, stat=None, place="< inconnu >", inventory=None, note=None, power=None):
         self.id = identifier
         self.name = name
         self.species = species
@@ -89,6 +99,9 @@ class Player:
 
         if note: self.note = note
         else: self.note = [[0, ""]]
+
+        if power: self.power = power
+        else: self.power = get_power_by_species(self.species)
 
     # --- Get information from player --- #
 
@@ -118,13 +131,7 @@ class Player:
         return False
 
     def get_special_powers(self):
-        species_list = data_species()
-        power_by_species = data_power_by_species()
-        
-        for species in power_by_species:
-            if self.species in species_list[species]:
-                return power_by_species[species]
-        return []
+        return self.power
 
     def have(self, object_name):
         name, _, ref_check = object_stat(object_name)
@@ -199,6 +206,26 @@ class Player:
             if not self.note:
                 self.note.append([0, ""])
             return content
+
+    def power_add(self, power_name):
+        power_id = data_power_index(power_name)
+        if not power_id:
+            return 0
+        elif power_id in self.power:
+            return 1
+        else:
+            self.power.append(power_id)
+            return 2
+
+    def power_sub(self, power_name):
+        power_id = data_power_index(power_name)
+        if not power_id:
+            return 0
+        elif power_id not in self.power:
+            return 1
+        else:
+            self.power.remove(power_id)
+            return 2
 
 # --------------------------------------------------
 # Database
@@ -297,7 +324,7 @@ def get_speed(mean, weather, land):
 # --------------------------------------------------
 
 def object_to_save(player):
-    return [player.id, player.name, player.species, player.stat, player.place, player.inventory, player.note]
+    return [player.id, player.name, player.species, player.stat, player.place, player.inventory, player.note, player.power]
 
 def save_to_object(save):
     return Player(*save)
